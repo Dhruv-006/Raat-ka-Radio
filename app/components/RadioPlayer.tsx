@@ -336,6 +336,13 @@ function TrackListModal({
 }) {
   const [viewIdx, setViewIdx] = useState(activePlaylistIdx);
   const viewPlaylist = playlists[viewIdx];
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = () => {
+    navigator.clipboard.writeText("https://raat-ka-radio.vercel.app");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="fixed inset-x-0 top-16 bottom-32 sm:bottom-40 z-40 flex items-center justify-center px-4 pointer-events-none animate-fade-in">
@@ -433,15 +440,24 @@ function TrackListModal({
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3.5 border-t border-white/5 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-white/40 flex-shrink-0">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+        <button 
+          onClick={handleShare}
+          className="w-full text-left px-5 py-3.5 border-t border-white/5 flex items-center gap-3 hover:bg-white/[0.04] transition-colors focus-visible:outline-none focus-visible:bg-white/[0.04]"
+        >
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${copied ? "bg-green-500/20 text-green-400" : "bg-white/5 text-white/40"}`}>
+            {copied ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+            )}
           </div>
           <div>
-            <p className="text-white/80 font-semibold text-[12px]">Share the radio</p>
+            <p className={`font-semibold text-[12px] transition-colors ${copied ? "text-green-400" : "text-white/80"}`}>
+              {copied ? "Link Copied!" : "Share the radio"}
+            </p>
             <p className="text-white/30 text-[10px]">raat-ka-radio.vercel.app</p>
           </div>
-        </div>
+        </button>
       </div>
     </div>
   );
