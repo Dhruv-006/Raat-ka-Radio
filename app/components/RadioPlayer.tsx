@@ -347,11 +347,10 @@ function TrackListModal({
               <button
                 key={pl.id}
                 onClick={() => setViewIdx(idx)}
-                className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase whitespace-nowrap transition-all flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent ${
-                  viewIdx === idx
+                className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase whitespace-nowrap transition-all flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent ${viewIdx === idx
                     ? "bg-white/[0.12] text-amber-accent shadow-sm ring-1 ring-white/10"
                     : "text-white/35 hover:text-white/60 hover:bg-white/[0.04]"
-                }`}
+                  }`}
               >
                 {pl.name}
               </button>
@@ -379,19 +378,18 @@ function TrackListModal({
               <button
                 key={track.id}
                 onClick={() => { onSelectTrack(viewIdx, idx); }}
-                className={`w-full text-left flex items-center gap-3.5 px-3 py-2.5 rounded-2xl transition-all duration-150 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent ${
-                  isCurrent
+                className={`w-full text-left flex items-center gap-3.5 px-3 py-2.5 rounded-2xl transition-all duration-150 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent ${isCurrent
                     ? "bg-white/[0.08]"
                     : "hover:bg-white/[0.04]"
-                }`}
+                  }`}
               >
                 {/* Track number or playing indicator */}
                 <div className={`w-5 text-center text-xs font-semibold tabular-nums flex-shrink-0 ${isCurrent ? "text-amber-accent" : "text-white/25 group-hover:text-white/50"}`}>
                   {isNowPlaying ? (
                     <div className="flex items-end justify-center gap-[2px] h-3.5 mx-auto">
-                      <span className="w-[3px] bg-amber-accent rounded-full animate-[eq1_0.8s_ease-in-out_infinite]" style={{height: '40%'}} />
-                      <span className="w-[3px] bg-amber-accent rounded-full animate-[eq2_0.6s_ease-in-out_infinite]" style={{height: '70%'}} />
-                      <span className="w-[3px] bg-amber-accent rounded-full animate-[eq3_0.7s_ease-in-out_infinite]" style={{height: '50%'}} />
+                      <span className="w-[3px] bg-amber-accent rounded-full animate-[eq1_0.8s_ease-in-out_infinite]" style={{ height: '40%' }} />
+                      <span className="w-[3px] bg-amber-accent rounded-full animate-[eq2_0.6s_ease-in-out_infinite]" style={{ height: '70%' }} />
+                      <span className="w-[3px] bg-amber-accent rounded-full animate-[eq3_0.7s_ease-in-out_infinite]" style={{ height: '50%' }} />
                     </div>
                   ) : isCurrent ? (
                     <svg className="w-3.5 h-3.5 mx-auto" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
@@ -441,7 +439,7 @@ function TrackListModal({
           </div>
           <div>
             <p className="text-white/80 font-semibold text-[12px]">Share the radio</p>
-            <p className="text-white/30 text-[10px]">raatkaradio.com</p>
+            <p className="text-white/30 text-[10px]">raat-ka-radio.vercel.app</p>
           </div>
         </div>
       </div>
@@ -742,8 +740,8 @@ export default function RadioPlayer() {
     <div className="w-full flex flex-col gap-4">
       {/* YouTube Player - Must be visible (not 1px, not offscreen, opacity > 0) to comply with YouTube terms. 
           We place it absolutely behind the player UI with near-zero opacity. */}
-      <div 
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 -z-10 pointer-events-none" 
+      <div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 -z-10 pointer-events-none"
         style={{ opacity: 0.001 }}
         aria-hidden="true"
       >
@@ -760,8 +758,7 @@ export default function RadioPlayer() {
           onClose={() => setShowPlaylist(false)}
         />
       )}
-
-      {/* Categories removed to move player up */}
+      \
 
       {/* ─── DESKTOP Player ─── */}
       <div
@@ -872,7 +869,7 @@ export default function RadioPlayer() {
           </button>
 
           <div className="flex items-center text-white/60 hover:text-white">
-             <VolumeControl playerRef={playerRef} />
+            <VolumeControl playerRef={playerRef} />
           </div>
 
           <button
