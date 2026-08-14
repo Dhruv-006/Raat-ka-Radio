@@ -32,7 +32,7 @@ export const playlists: Playlist[] = [
         film: "Wake Up Sid",
         year: 2009,
         duration: 234,
-        videoId: "Q6T9C8X1l2k",
+        videoId: "ZlOZktsODpA",
       },
       {
         id: "sks-2",
@@ -41,7 +41,7 @@ export const playlists: Playlist[] = [
         film: "Jab We Met",
         year: 2007,
         duration: 280,
-        videoId: "F3v6c7104bA",
+        videoId: "u7hfwX81bY4",
       },
       {
         id: "sks-3",
@@ -50,7 +50,7 @@ export const playlists: Playlist[] = [
         film: "Zindagi Na Milegi Dobara",
         year: 2011,
         duration: 295,
-        videoId: "cscdqZUdgCk",
+        videoId: "xZAXVM1rSbk",
       },
       {
         id: "sks-4",
@@ -59,7 +59,7 @@ export const playlists: Playlist[] = [
         film: "Yeh Jawaani Hai Deewani",
         year: 2013,
         duration: 222,
-        videoId: "87Y5j8y5h70",
+        videoId: "4ehgyK5dQfE",
       },
       {
         id: "sks-5",
@@ -68,7 +68,7 @@ export const playlists: Playlist[] = [
         film: "Tamasha",
         year: 2015,
         duration: 288,
-        videoId: "OQ-DiP-Cuj4",
+        videoId: "sOhESxhibAM",
       },
       {
         id: "sks-6",
@@ -77,7 +77,7 @@ export const playlists: Playlist[] = [
         film: "Swades",
         year: 2004,
         duration: 367,
-        videoId: "k5Sg1V1n51E",
+        videoId: "fXi5ThNAM0w",
       },
       {
         id: "sks-7",
@@ -86,7 +86,7 @@ export const playlists: Playlist[] = [
         film: "Wake Up Sid",
         year: 2009,
         duration: 263,
-        videoId: "qT3K29m7R9c",
+        videoId: "CV9z9Yarbgk",
       },
       {
         id: "sks-8",
@@ -95,7 +95,7 @@ export const playlists: Playlist[] = [
         film: "Rockstar",
         year: 2011,
         duration: 283,
-        videoId: "L02t9e2V37E",
+        videoId: "-3gQ6HIkRys",
       },
       {
         id: "sks-9",
@@ -104,7 +104,7 @@ export const playlists: Playlist[] = [
         film: "Barfi!",
         year: 2012,
         duration: 230,
-        videoId: "n6Q48Cc07w0",
+        videoId: "aQHled_gLxU",
       },
       {
         id: "sks-10",
@@ -113,7 +113,7 @@ export const playlists: Playlist[] = [
         film: "Parichay",
         year: 1972,
         duration: 289,
-        videoId: "7Vb_lP5t34w",
+        videoId: "DcULR7rk5Js",
       },
     ],
   },
@@ -131,7 +131,7 @@ export const playlists: Playlist[] = [
         film: "Jo Jeeta Wohi Sikandar",
         year: 1992,
         duration: 310,
-        videoId: "w1S2p1-lq6s",
+        videoId: "ODu7OyAqK-Q",
       },
       {
         id: "ds-2",
@@ -140,7 +140,7 @@ export const playlists: Playlist[] = [
         film: "The Train",
         year: 1970,
         duration: 268,
-        videoId: "F5k49D4lZ6c",
+        videoId: "Xsn0QjMN3fM",
       },
       {
         id: "ds-3",
@@ -149,7 +149,7 @@ export const playlists: Playlist[] = [
         film: "Ghulam",
         year: 1998,
         duration: 330,
-        videoId: "Ww4t7g9a8sE",
+        videoId: "qEFgYftu29c",
       },
       {
         id: "ds-4",
@@ -158,7 +158,7 @@ export const playlists: Playlist[] = [
         film: "Silk Route",
         year: 1998,
         duration: 282,
-        videoId: "s3w2yN22H9s",
+        videoId: "ecPMVO7JuTo",
       },
       {
         id: "ds-5",
@@ -167,7 +167,7 @@ export const playlists: Playlist[] = [
         film: "Rang De Basanti",
         year: 2006,
         duration: 335,
-        videoId: "1u4dE-9D3s4",
+        videoId: "jI7FFN4wW5E",
       },
       {
         id: "ds-6",
@@ -176,7 +176,7 @@ export const playlists: Playlist[] = [
         film: "Rehnaa Hai Terre Dil Mein",
         year: 2001,
         duration: 327,
-        videoId: "o-59m6y0r0M",
+        videoId: "6CXI5ZQgo7A",
       },
       {
         id: "ds-7",
@@ -185,7 +185,7 @@ export const playlists: Playlist[] = [
         film: "Om Shanti Om",
         year: 2007,
         duration: 253,
-        videoId: "7KKVb0_IdD4",
+        videoId: "cLPkUggsAsE",
       },
       {
         id: "ds-8",
@@ -194,7 +194,7 @@ export const playlists: Playlist[] = [
         film: "Wake Up Sid",
         year: 2009,
         duration: 234,
-        videoId: "L585-jT-W4Y",
+        videoId: "ZlOZktsODpA",
       },
       {
         id: "ds-9",
@@ -203,7 +203,7 @@ export const playlists: Playlist[] = [
         film: "Jab We Met",
         year: 2007,
         duration: 325,
-        videoId: "Cb6wuzOurPc",
+        videoId: "01HR1uP4kic",
       },
       {
         id: "ds-10",
@@ -212,7 +212,7 @@ export const playlists: Playlist[] = [
         film: "Kaho Naa Pyaar Hai",
         year: 2000,
         duration: 312,
-        videoId: "k2Z4R0t0414",
+        videoId: "1Nf8eQ9dkGY",
       },
     ],
   },
@@ -230,7 +230,7 @@ export const playlists: Playlist[] = [
         film: "",
         year: 1996,
         duration: 306,
-        videoId: "UIy5Bx5qz_4",
+        videoId: "qZgTPiuifBo",
       },
       {
         id: "rabh-2",
@@ -239,7 +239,7 @@ export const playlists: Playlist[] = [
         film: "Jab We Met",
         year: 2007,
         duration: 341,
-        videoId: "HYGMQ1LRIjI",
+        videoId: "CNZMIhckaA0",
       },
       {
         id: "rabh-3",
@@ -248,7 +248,7 @@ export const playlists: Playlist[] = [
         film: "Jaane Tu Ya Jaane Na",
         year: 2008,
         duration: 310,
-        videoId: "y6-M6b90T9c",
+        videoId: "QGinK1vaK5M",
       },
       {
         id: "rabh-4",
@@ -257,7 +257,7 @@ export const playlists: Playlist[] = [
         film: "Om Shanti Om",
         year: 2007,
         duration: 310,
-        videoId: "my6GQzuCsqE",
+        videoId: "8tAxzESfBl4",
       },
       {
         id: "rabh-5",
@@ -266,7 +266,7 @@ export const playlists: Playlist[] = [
         film: "Ajab Prem Ki Ghazab Kahani",
         year: 2009,
         duration: 310,
-        videoId: "P3aovt_cCwk",
+        videoId: "P8PWN1OmZOA",
       },
       {
         id: "rabh-6",
@@ -275,7 +275,7 @@ export const playlists: Playlist[] = [
         film: "Guru",
         year: 2007,
         duration: 342,
-        videoId: "A2Wp9v6P-h4",
+        videoId: "7HKbt19q3Rc",
       },
       {
         id: "rabh-7",
@@ -284,7 +284,7 @@ export const playlists: Playlist[] = [
         film: "Yeh Jawaani Hai Deewani",
         year: 2013,
         duration: 260,
-        videoId: "QYO6AlxiRE4",
+        videoId: "jcjOF-MrUs4",
       },
       {
         id: "rabh-8",
@@ -293,7 +293,7 @@ export const playlists: Playlist[] = [
         film: "Barfi!",
         year: 2012,
         duration: 293,
-        videoId: "kYJzX62P6x8",
+        videoId: "Z93rAu25KqI",
       },
       {
         id: "rabh-9",
@@ -302,7 +302,7 @@ export const playlists: Playlist[] = [
         film: "Aisha",
         year: 2010,
         duration: 265,
-        videoId: "wX-Y12L-4w8",
+        videoId: "v_hJOCzvABU",
       },
       {
         id: "rabh-10",
@@ -311,7 +311,7 @@ export const playlists: Playlist[] = [
         film: "",
         year: 1970,
         duration: 427,
-        videoId: "Hh2427a9S5A",
+        videoId: "C3hOqtRQ9bs",
       },
     ],
   },
@@ -329,7 +329,7 @@ export const playlists: Playlist[] = [
         film: "",
         year: 2018,
         duration: 304,
-        videoId: "_sT-YpS940bI",
+        videoId: "sFMRqxCexDk",
       },
       {
         id: "2b-2",
@@ -338,7 +338,7 @@ export const playlists: Playlist[] = [
         film: "",
         year: 2015,
         duration: 317,
-        videoId: "h0H63Z9zY0I",
+        videoId: "hvKaPTmQBA8",
       },
       {
         id: "2b-3",
@@ -347,7 +347,7 @@ export const playlists: Playlist[] = [
         film: "New York",
         year: 2009,
         duration: 303,
-        videoId: "dTu5dTEzVM4",
+        videoId: "01HR1uP4kic",
       },
       {
         id: "2b-4",
@@ -356,7 +356,7 @@ export const playlists: Playlist[] = [
         film: "Rehnaa Hai Terre Dil Mein",
         year: 2001,
         duration: 340,
-        videoId: "rj3H9aLw-1E",
+        videoId: "nya9D8kluE0",
       },
       {
         id: "2b-5",
@@ -365,7 +365,7 @@ export const playlists: Playlist[] = [
         film: "Life In A Metro",
         year: 2007,
         duration: 300,
-        videoId: "r2yS9b-bC7E",
+        videoId: "hM9QDpLHhdw",
       },
       {
         id: "2b-6",
@@ -374,7 +374,7 @@ export const playlists: Playlist[] = [
         film: "Anjaana Anjaani",
         year: 2010,
         duration: 326,
-        videoId: "I28UEa24VPo",
+        videoId: "NPb9WIzIQsQ",
       },
       {
         id: "2b-7",
@@ -383,7 +383,7 @@ export const playlists: Playlist[] = [
         film: "",
         year: 2015,
         duration: 280,
-        videoId: "Dp6lbdoprZ0",
+        videoId: "4WB5y4DAcKE",
       },
       {
         id: "2b-8",
@@ -392,7 +392,7 @@ export const playlists: Playlist[] = [
         film: "Murder 2",
         year: 2011,
         duration: 319,
-        videoId: "uVB6rqDMUCc",
+        videoId: "ZZC9T31knpc",
       },
       {
         id: "2b-9",
@@ -401,7 +401,7 @@ export const playlists: Playlist[] = [
         film: "Aashiqui 2",
         year: 2013,
         duration: 293,
-        videoId: "REK4qJ4_aC8",
+        videoId: "s0ksvPulHt8",
       },
       {
         id: "2b-10",
@@ -410,7 +410,7 @@ export const playlists: Playlist[] = [
         film: "Badlapur",
         year: 2015,
         duration: 298,
-        videoId: "g0Q404G72wM",
+        videoId: "t2VaF0ZX65w",
       },
     ],
   },
@@ -428,7 +428,7 @@ export const playlists: Playlist[] = [
         film: "Parichay",
         year: 1972,
         duration: 289,
-        videoId: "7Vb_lP5t34w",
+        videoId: "DcULR7rk5Js",
       },
       {
         id: "hm-2",
@@ -437,7 +437,7 @@ export const playlists: Playlist[] = [
         film: "Andaz",
         year: 1971,
         duration: 261,
-        videoId: "hE02t2O5V-8",
+        videoId: "mzxHflxI-es",
       },
       {
         id: "hm-3",
@@ -446,7 +446,7 @@ export const playlists: Playlist[] = [
         film: "Don",
         year: 1978,
         duration: 303,
-        videoId: "fXw693C0X6k",
+        videoId: "ZphoNQVYNi0",
       },
       {
         id: "hm-4",
@@ -455,7 +455,7 @@ export const playlists: Playlist[] = [
         film: "Kalaakaar",
         year: 1983,
         duration: 287,
-        videoId: "N5v9G6m-v0o",
+        videoId: "ThHYiiZTB1Y",
       },
       {
         id: "hm-5",
@@ -464,7 +464,7 @@ export const playlists: Playlist[] = [
         film: "Mere Jeevan Saathi",
         year: 1972,
         duration: 295,
-        videoId: "wX-y072v76s",
+        videoId: "_w14bUcxl1c",
       },
       {
         id: "hm-6",
@@ -473,7 +473,7 @@ export const playlists: Playlist[] = [
         film: "Aradhana",
         year: 1969,
         duration: 269,
-        videoId: "P5y0pY_0v6I",
+        videoId: "Nw7lcCNSYy8",
       },
       {
         id: "hm-7",
@@ -482,7 +482,7 @@ export const playlists: Playlist[] = [
         film: "Blackmail",
         year: 1973,
         duration: 287,
-        videoId: "v0TejHIZLV8",
+        videoId: "f5dw3nafOuo",
       },
       {
         id: "hm-8",
@@ -491,7 +491,7 @@ export const playlists: Playlist[] = [
         film: "Gol Maal",
         year: 1979,
         duration: 298,
-        videoId: "t7tXh8Gk27Y",
+        videoId: "VE3SaNOJPGI",
       },
       {
         id: "hm-9",
@@ -500,7 +500,7 @@ export const playlists: Playlist[] = [
         film: "Ajnabee",
         year: 1974,
         duration: 276,
-        videoId: "fXw693C0X6k",
+        videoId: "vS_JXshiu68",
       },
       {
         id: "hm-10",
@@ -509,7 +509,7 @@ export const playlists: Playlist[] = [
         film: "Yaarana",
         year: 1981,
         duration: 337,
-        videoId: "v0TejHIZLV8",
+        videoId: "LF5Lz9zPfIw",
       },
     ],
   },
@@ -527,7 +527,7 @@ export const playlists: Playlist[] = [
         film: "Rockstar",
         year: 2011,
         duration: 469,
-        videoId: "T9tLZ0J1s9g",
+        videoId: "T94PHkuydcw",
       },
       {
         id: "shwh-2",
@@ -536,7 +536,7 @@ export const playlists: Playlist[] = [
         film: "Delhi-6",
         year: 2009,
         duration: 384,
-        videoId: "kYv9iD03sS0",
+        videoId: "dXdD1_AGBZg",
       },
       {
         id: "shwh-3",
@@ -545,7 +545,7 @@ export const playlists: Playlist[] = [
         film: "Rockstar",
         year: 2011,
         duration: 283,
-        videoId: "L02t9e2V37E",
+        videoId: "-3gQ6HIkRys",
       },
       {
         id: "shwh-4",
@@ -554,7 +554,7 @@ export const playlists: Playlist[] = [
         film: "Barfi!",
         year: 2012,
         duration: 253,
-        videoId: "-G51a-u4_tY",
+        videoId: "OuNGySNJjWg",
       },
       {
         id: "shwh-5",
@@ -563,7 +563,7 @@ export const playlists: Playlist[] = [
         film: "Tamasha",
         year: 2015,
         duration: 288,
-        videoId: "OQ-DiP-Cuj4",
+        videoId: "sOhESxhibAM",
       },
       {
         id: "shwh-6",
@@ -572,7 +572,7 @@ export const playlists: Playlist[] = [
         film: "Highway",
         year: 2014,
         duration: 307,
-        videoId: "t-p2N4-Y69c",
+        videoId: "rwZDGFuA0xE",
       },
       {
         id: "shwh-7",
@@ -581,7 +581,7 @@ export const playlists: Playlist[] = [
         film: "Bhaag Milkha Bhaag",
         year: 2013,
         duration: 270,
-        videoId: "m5aUe2v9M3Q",
+        videoId: "K9opdAw3Osk",
       },
       {
         id: "shwh-8",
@@ -590,7 +590,7 @@ export const playlists: Playlist[] = [
         film: "Udaan",
         year: 2010,
         duration: 310,
-        videoId: "l4DlDJdCrc8",
+        videoId: "ugm2SOScEqA",
       },
       {
         id: "shwh-9",
@@ -599,7 +599,7 @@ export const playlists: Playlist[] = [
         film: "Dear Zindagi",
         year: 2016,
         duration: 248,
-        videoId: "9B78_tJ589o",
+        videoId: "rwn0Zs7ELzc",
       },
       {
         id: "shwh-10",
@@ -608,7 +608,7 @@ export const playlists: Playlist[] = [
         film: "Swades",
         year: 2004,
         duration: 367,
-        videoId: "k5Sg1V1n51E",
+        videoId: "fXi5ThNAM0w",
       },
     ],
   },
