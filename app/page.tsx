@@ -37,6 +37,16 @@ export default function Home() {
           <RadioPlayer />
         </div>
       </div>
+
+      {/* ─── Creator Badge ─── */}
+      <a 
+        href="https://github.com/Dhruv-006"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-3 right-4 sm:bottom-4 sm:right-5 z-50 text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase text-white/30 hover:text-amber-accent transition-colors safe-bottom safe-right"
+      >
+        Created by Dhruv
+      </a>
     </main>
   );
 }
