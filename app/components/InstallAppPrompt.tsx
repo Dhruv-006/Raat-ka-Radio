@@ -19,15 +19,8 @@ export default function InstallAppPrompt() {
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    
-    // For demonstration, we also show it after a delay if the event hasn't fired
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 2000);
-
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-      clearTimeout(timer);
     };
   }, []);
 
