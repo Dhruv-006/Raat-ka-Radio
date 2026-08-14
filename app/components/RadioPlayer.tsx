@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { track } from "@vercel/analytics";
-import { playlists } from "./playlist-data";
+import { playlists, Track, Playlist } from "./playlist-data";
 
 /* ─── YouTube API Types ─── */
 
@@ -242,9 +242,17 @@ function Transport({
 function PlaylistTabs({
   activeIdx,
   onSwitch,
+  allPlaylists,
+  onCreatePlaylist,
+  onImportPlaylist,
+  isImporting,
 }: {
   activeIdx: number;
   onSwitch: (idx: number) => void;
+  allPlaylists: Playlist[];
+  onCreatePlaylist: () => void;
+  onImportPlaylist: () => void;
+  isImporting: boolean;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -261,10 +269,20 @@ function PlaylistTabs({
     checkScroll();
     const el = scrollRef.current;
     if (!el) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+
     el.addEventListener("scroll", checkScroll, { passive: true });
+    el.addEventListener("wheel", handleWheel, { passive: false });
     window.addEventListener("resize", checkScroll);
     return () => {
       el.removeEventListener("scroll", checkScroll);
+      el.removeEventListener("wheel", handleWheel);
       window.removeEventListener("resize", checkScroll);
     };
   }, [checkScroll]);
@@ -281,28 +299,13 @@ function PlaylistTabs({
 
   return (
     <div className="relative w-full max-w-[580px]">
-      {/* Left fade */}
-      <div
-        className="absolute left-0 top-0 bottom-0 w-8 z-10 pointer-events-none transition-opacity duration-300"
-        style={{
-          opacity: canScrollLeft ? 1 : 0,
-          background: "linear-gradient(to right, rgba(0,0,0,0.7), transparent)",
-        }}
-      />
-      {/* Right fade */}
-      <div
-        className="absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none transition-opacity duration-300"
-        style={{
-          opacity: canScrollRight ? 1 : 0,
-          background: "linear-gradient(to left, rgba(0,0,0,0.7), transparent)",
-        }}
-      />
+
 
       <div
         ref={scrollRef}
         className="flex gap-1 p-1 bg-white/[0.04] rounded-full backdrop-blur-md overflow-x-auto scrollbar-hide"
       >
-        {playlists.map((p, idx) => (
+        {allPlaylists.map((p, idx) => (
           <button
             key={p.id}
             onClick={() => onSwitch(idx)}
@@ -313,9 +316,24 @@ function PlaylistTabs({
               }`}
           >
             <span className="text-sm">{p.icon}</span>
-            <span>{p.name}</span>
+            <span>{p.name.length > 20 ? p.name.substring(0, 18) + '...' : p.name}</span>
           </button>
         ))}
+
+        <div className="w-[1px] h-4 bg-white/10 self-center mx-1 flex-shrink-0" />
+        <button
+          onClick={onCreatePlaylist}
+          className="relative px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest transition-all duration-200 flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent whitespace-nowrap flex-shrink-0 text-white/40 hover:text-white hover:bg-white/10 uppercase"
+        >
+          + New Playlist
+        </button>
+        <button
+          onClick={onImportPlaylist}
+          disabled={isImporting}
+          className={`relative px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest transition-all duration-200 flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 whitespace-nowrap flex-shrink-0 uppercase disabled:opacity-50 disabled:cursor-not-allowed border border-dashed border-red-500/30 ${isImporting ? 'text-red-400/50 cursor-not-allowed' : 'text-red-400/80 hover:text-red-400 hover:bg-red-500/10'}`}
+        >
+          {isImporting ? "⏳ IMPORTING..." : "📥 IMPORT YT PLAYLIST"}
+        </button>
       </div>
     </div>
   );
@@ -325,20 +343,66 @@ function TrackListModal({
   activePlaylistIdx,
   currentTrackIdx,
   isPlaying,
+  allPlaylists,
+  customPlaylists,
   onSelectTrack,
   onClose,
+  onAddTrack,
+  onRemoveTrack,
+  onCreatePlaylist,
+  onImportPlaylist,
+  isImporting,
+  onDeletePlaylist,
 }: {
   activePlaylistIdx: number;
   currentTrackIdx: number;
   isPlaying: boolean;
+  allPlaylists: Playlist[];
+  customPlaylists: Playlist[];
   onSelectTrack: (playlistIdx: number, trackIdx: number) => void;
   onClose: () => void;
+  onAddTrack: (track: Track, playlistId: string) => void;
+  onRemoveTrack: (trackId: string, playlistId: string) => void;
+  onCreatePlaylist: () => void;
+  onImportPlaylist: () => void;
+  isImporting: boolean;
+  onDeletePlaylist: (id: string) => void;
 }) {
   const [viewIdx, setViewIdx] = useState(activePlaylistIdx);
-  const viewPlaylist = playlists[viewIdx];
+  const viewPlaylist = allPlaylists[viewIdx] || allPlaylists[0];
   const [copied, setCopied] = useState(false);
+  const [addMenuOpenFor, setAddMenuOpenFor] = useState<string | null>(null);
+  
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
 
-  const handleShare = () => {
+  useEffect(() => {
+    const el = categoryScrollRef.current;
+    if (!el) return;
+    const handleWheel = (e: WheelEvent) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", handleWheel);
+    };
+  }, []);
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Raat Ka Radio',
+          text: 'Tune in to Raat Ka Radio 📻✨',
+          url: 'https://raat-ka-radio.vercel.app',
+        });
+        return;
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    }
     navigator.clipboard.writeText("https://raat-ka-radio.vercel.app");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -349,8 +413,8 @@ function TrackListModal({
       <div className="rounded-[28px] w-full max-w-2xl max-h-full flex flex-col overflow-hidden pointer-events-auto" style={{ background: 'rgba(15, 12, 10, 0.92)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', boxShadow: '0 16px 48px -12px rgba(0,0,0,0.8)' }}>
         {/* Category Tabs */}
         <div className="px-4 pt-4 pb-0 border-b border-white/5">
-          <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-3">
-            {playlists.map((pl, idx) => (
+          <div ref={categoryScrollRef} className="flex gap-1 overflow-x-auto scrollbar-hide pb-3">
+            {allPlaylists.map((pl, idx) => (
               <button
                 key={pl.id}
                 onClick={() => setViewIdx(idx)}
@@ -359,14 +423,41 @@ function TrackListModal({
                     : "text-white/35 hover:text-white/60 hover:bg-white/[0.04]"
                   }`}
               >
-                {pl.name}
+                {pl.icon} {pl.name.length > 20 ? pl.name.substring(0, 18) + '...' : pl.name}
               </button>
             ))}
+            <button
+                onClick={onCreatePlaylist}
+                className="px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase whitespace-nowrap transition-all flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent text-white/35 hover:text-white/60 hover:bg-white/[0.04] border border-dashed border-white/20"
+              >
+                + NEW PLAYLIST
+            </button>
+            <button
+                onClick={onImportPlaylist}
+                disabled={isImporting}
+                className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase whitespace-nowrap transition-all flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 border border-dashed border-red-500/30 ${isImporting ? 'text-red-400/50 cursor-not-allowed' : 'text-red-400/80 hover:text-red-400 hover:bg-red-500/10'}`}
+              >
+                {isImporting ? "⏳ IMPORTING..." : "📥 IMPORT YT PLAYLIST"}
+            </button>
           </div>
           <div className="flex items-center justify-between px-1 pb-3">
-            <p className="text-white/30 text-[10px] font-medium">
-              {viewPlaylist.tracks.length} tracks · {viewPlaylist.time}
-            </p>
+            <div className="flex items-center gap-3">
+              <p className="text-white/30 text-[10px] font-medium">
+                {viewPlaylist.tracks.length} tracks · {viewPlaylist.time}
+              </p>
+              {viewPlaylist.id.startsWith("custom-") && (
+                <button
+                  onClick={() => {
+                    if (window.confirm("Are you sure you want to delete this playlist?")) {
+                      onDeletePlaylist(viewPlaylist.id);
+                    }
+                  }}
+                  className="px-2 py-1 rounded text-[9px] font-bold tracking-widest uppercase text-red-400/50 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                >
+                  Delete Playlist
+                </button>
+              )}
+            </div>
             <button
               onClick={onClose}
               className="w-7 h-7 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-white/10 text-white/40 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent"
@@ -382,14 +473,19 @@ function TrackListModal({
             const isCurrent = (viewIdx === activePlaylistIdx) && (idx === currentTrackIdx);
             const isNowPlaying = isCurrent && isPlaying;
             return (
-              <button
-                key={track.id}
-                onClick={() => { onSelectTrack(viewIdx, idx); }}
-                className={`w-full text-left flex items-center gap-3.5 px-3 py-2.5 rounded-2xl transition-all duration-150 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent ${isCurrent
+              <div
+                key={track.id + idx}
+                className={`w-full text-left flex items-center gap-3.5 px-3 py-2.5 rounded-2xl transition-all duration-150 group ${isCurrent
                     ? "bg-white/[0.08]"
                     : "hover:bg-white/[0.04]"
-                  }`}
+                  } relative`}
               >
+                <button 
+                  onClick={() => { onSelectTrack(viewIdx, idx); }}
+                  className="absolute inset-0 w-full h-full cursor-pointer rounded-2xl z-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent"
+                  aria-label={`Play ${track.title}`}
+                />
+                <div className="relative z-10 flex items-center gap-3.5 w-full pointer-events-none">
                 {/* Track number or playing indicator */}
                 <div className={`w-5 text-center text-xs font-semibold tabular-nums flex-shrink-0 ${isCurrent ? "text-amber-accent" : "text-white/25 group-hover:text-white/50"}`}>
                   {isNowPlaying ? (
@@ -431,10 +527,53 @@ function TrackListModal({
                 </div>
 
                 {/* Duration */}
-                <span className="text-[10px] text-white/20 font-medium tabular-nums flex-shrink-0 hidden sm:block">
+                <span className="text-[10px] text-white/20 font-medium tabular-nums flex-shrink-0 hidden sm:block mr-2">
                   {formatTime(track.duration)}
                 </span>
-              </button>
+                </div>
+                
+                {/* Actions */}
+                <div className="relative z-20 flex-shrink-0">
+                  {viewPlaylist.id.startsWith("custom-") ? (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onRemoveTrack(track.id, viewPlaylist.id); }}
+                      className="p-1.5 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                      title="Remove from playlist"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
+                    </button>
+                  ) : (
+                    <div className="relative">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setAddMenuOpenFor(addMenuOpenFor === track.id ? null : track.id); }}
+                        className="p-1.5 text-white/20 hover:text-amber-accent hover:bg-amber-accent/10 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent"
+                        title="Add to custom playlist"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                      </button>
+                      
+                      {addMenuOpenFor === track.id && (
+                        <div className="absolute right-0 top-full mt-1 w-48 bg-[#1e150f] border border-white/10 rounded-xl shadow-xl overflow-hidden py-1 z-50 animate-fade-in origin-top-right">
+                          <div className="px-3 py-1.5 text-[10px] font-semibold text-white/40 uppercase tracking-wider">Add to Playlist</div>
+                          {customPlaylists.length === 0 ? (
+                            <div className="px-3 py-2 text-xs text-white/50 italic">No custom playlists yet. Create one first!</div>
+                          ) : (
+                            customPlaylists.map(cp => (
+                              <button
+                                key={cp.id}
+                                onClick={(e) => { e.stopPropagation(); onAddTrack(track, cp.id); setAddMenuOpenFor(null); }}
+                                className="w-full text-left px-3 py-2 text-xs text-white/80 hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:bg-white/10"
+                              >
+                                {cp.icon} {cp.name}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             );
           })}
         </div>
@@ -529,7 +668,16 @@ function VolumeControl({ playerRef }: { playerRef: React.MutableRefObject<YTPlay
 /* ─── Main Radio Player ─── */
 
 export default function RadioPlayer() {
+  const [customPlaylists, setCustomPlaylists] = useState<Playlist[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [playlistIdx, setPlaylistIdx] = useState(0);
+  const [promptConfig, setPromptConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    placeholder: string;
+    action: "CREATE" | "IMPORT" | null;
+  }>({ isOpen: false, title: "", placeholder: "", action: null });
   const [trackIdx, setTrackIdx] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -542,8 +690,50 @@ export default function RadioPlayer() {
   const trackIdxRef = useRef(trackIdx);
   const playlistIdxRef = useRef(playlistIdx);
 
-  const playlist = playlists[playlistIdx];
-  const currentTrack = playlist.tracks[trackIdx];
+  useEffect(() => {
+    // Smart initialization
+    const hour = new Date().getHours();
+    let defaultIdx = 0;
+    
+    if (hour >= 7 && hour < 12) defaultIdx = 0;       // SUBAH KA SUKOON
+    else if (hour >= 12 && hour < 16) defaultIdx = 1; // DOPAHAR KI DHOOP
+    else if (hour >= 16 && hour < 18) defaultIdx = 2; // CHAI AUR CHILL
+    else if (hour >= 18 && hour < 21) defaultIdx = 3; // SHAAM KA SHEHER
+    else if (hour >= 21 && hour < 23) defaultIdx = 4; // DIL SE
+    else if (hour === 23 || hour === 0) defaultIdx = 5; // RAAT ABHI BAAKI HAI
+    else if (hour >= 1 && hour < 3) defaultIdx = 6;   // 2 BAJE
+    else if (hour >= 3 && hour < 5) defaultIdx = 7;   // HIGHWAY MODE
+    else if (hour >= 5 && hour < 7) defaultIdx = 8;   // SUBAH HONE WALI HAI
+    
+    setPlaylistIdx(defaultIdx);
+    
+    // Pick random track
+    const pl = playlists[defaultIdx];
+    if (pl && pl.tracks.length > 0) {
+      setTrackIdx(Math.floor(Math.random() * pl.tracks.length));
+    }
+
+    try {
+      const stored = localStorage.getItem("rkr_custom_playlists");
+      if (stored) {
+        setCustomPlaylists(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error("Failed to load custom playlists", e);
+    }
+    setIsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem("rkr_custom_playlists", JSON.stringify(customPlaylists));
+    }
+  }, [customPlaylists, isLoaded]);
+
+  const allPlaylists = React.useMemo(() => [...playlists, ...customPlaylists], [customPlaylists]);
+
+  const playlist = allPlaylists[playlistIdx] || allPlaylists[0];
+  const currentTrack = playlist?.tracks[trackIdx] || playlists[0].tracks[0];
 
   // Keep refs in sync
   useEffect(() => {
@@ -551,10 +741,110 @@ export default function RadioPlayer() {
     playlistIdxRef.current = playlistIdx;
   }, [trackIdx, playlistIdx]);
 
+  /* ─── Custom Playlist Handlers ─── */
+  const processImport = async (url: string) => {
+    let playlistId = "";
+    try {
+      if (url.includes("list=")) {
+        const urlObj = new URL(url);
+        playlistId = urlObj.searchParams.get("list") || "";
+      } else {
+        playlistId = url.trim();
+      }
+    } catch {
+      alert("Invalid URL format.");
+      return;
+    }
+
+    if (!playlistId) {
+      alert("Could not find playlist ID.");
+      return;
+    }
+
+    setIsImporting(true);
+    try {
+      const res = await fetch(`/api/youtube/import?playlistId=${playlistId}`);
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || "Failed to import");
+
+      const newPlaylist: Playlist = {
+        id: `custom-yt-${Date.now()}`,
+        name: data.name.toUpperCase(),
+        icon: "▶️",
+        description: "Imported from YouTube",
+        time: "Anytime",
+        tracks: data.tracks
+      };
+
+      setCustomPlaylists(prev => [...prev, newPlaylist]);
+      setPlaylistIdx(playlists.length + customPlaylists.length);
+      setTrackIdx(0);
+      setShowPlaylist(true);
+      alert(`Successfully imported ${data.tracks.length} tracks!`);
+    } catch (err: any) {
+      alert(`Import failed: ${err.message}`);
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  const processCreate = (name: string) => {
+    const newPlaylist: Playlist = {
+      id: `custom-${Date.now()}`,
+      name: name.trim().toUpperCase(),
+      icon: "🎧",
+      description: "My custom playlist",
+      time: "Anytime",
+      tracks: []
+    };
+    setCustomPlaylists(prev => [...prev, newPlaylist]);
+    setPlaylistIdx(playlists.length + customPlaylists.length);
+    setTrackIdx(0);
+    setShowPlaylist(true);
+  };
+
+  const handlePromptSubmit = (val: string) => {
+    if (!val || !val.trim()) return;
+    const action = promptConfig.action;
+    setPromptConfig({ ...promptConfig, isOpen: false });
+    
+    if (action === "CREATE") {
+      processCreate(val);
+    } else if (action === "IMPORT") {
+      processImport(val);
+    }
+  };
+
+  const handleDeletePlaylist = (playlistId: string) => {
+    setCustomPlaylists(prev => prev.filter(p => p.id !== playlistId));
+    setPlaylistIdx(0); // Safely reset to first playlist
+    setTrackIdx(0);
+  };
+
+  const handleAddTrack = (track: Track, playlistId: string) => {
+    setCustomPlaylists(prev => prev.map(p => {
+      if (p.id === playlistId) {
+        if (p.tracks.some(t => t.id === track.id)) return p;
+        return { ...p, tracks: [...p.tracks, track] };
+      }
+      return p;
+    }));
+  };
+
+  const handleRemoveTrack = (trackId: string, playlistId: string) => {
+    setCustomPlaylists(prev => prev.map(p => {
+      if (p.id === playlistId) {
+        return { ...p, tracks: p.tracks.filter(t => t.id !== trackId) };
+      }
+      return p;
+    }));
+  };
+
   /* ─── Track navigation ─── */
 
   const goNext = useCallback(() => {
-    const pl = playlists[playlistIdxRef.current];
+    const pl = allPlaylists[playlistIdxRef.current];
     const nextIdx = (trackIdxRef.current + 1) % pl.tracks.length;
     track("next", { playlist: pl.name, track: pl.tracks[nextIdx].title });
     setTrackIdx(nextIdx);
@@ -562,7 +852,7 @@ export default function RadioPlayer() {
   }, []);
 
   const goPrev = useCallback(() => {
-    const pl = playlists[playlistIdxRef.current];
+    const pl = allPlaylists[playlistIdxRef.current];
     if (playerRef.current && playerRef.current.getCurrentTime() > 3) {
       playerRef.current.seekTo(0, true);
       setElapsed(0);
@@ -583,7 +873,7 @@ export default function RadioPlayer() {
 
   const togglePlay = useCallback(() => {
     if (!playerRef.current) return;
-    const pl = playlists[playlistIdxRef.current];
+    const pl = allPlaylists[playlistIdxRef.current];
     const t = pl.tracks[trackIdxRef.current];
 
     if (isPlaying) {
@@ -602,7 +892,7 @@ export default function RadioPlayer() {
       playerRef.current.seekTo(newTime, true);
       setElapsed(newTime);
       track("seek", {
-        playlist: playlists[playlistIdxRef.current].name,
+        playlist: allPlaylists[playlistIdxRef.current].name,
         percentage: Math.round(pct * 100),
       });
     },
@@ -613,8 +903,8 @@ export default function RadioPlayer() {
     (idx: number) => {
       if (idx === playlistIdx) return;
       track("playlist_switch", {
-        from: playlists[playlistIdx].name,
-        to: playlists[idx].name,
+        from: allPlaylists[playlistIdx].name,
+        to: allPlaylists[idx].name,
       });
       setPlaylistIdx(idx);
       setTrackIdx(0);
@@ -625,7 +915,7 @@ export default function RadioPlayer() {
 
   const selectTrackFromModal = useCallback(
     (plIdx: number, trIdx: number) => {
-      const pl = playlists[plIdx];
+      const pl = allPlaylists[plIdx];
       track("select_track", { playlist: pl.name, track: pl.tracks[trIdx].title });
       if (plIdx !== playlistIdxRef.current) {
         setPlaylistIdx(plIdx);
@@ -643,7 +933,7 @@ export default function RadioPlayer() {
 
   useEffect(() => {
     const goNextRef = () => {
-      const pl = playlists[playlistIdxRef.current];
+      const pl = allPlaylists[playlistIdxRef.current];
       const nextIdx = (trackIdxRef.current + 1) % pl.tracks.length;
       track("next", { playlist: pl.name, track: pl.tracks[nextIdx].title });
       setTrackIdx(nextIdx);
@@ -658,7 +948,7 @@ export default function RadioPlayer() {
         height: "1",
         width: "1",
         videoId:
-          playlists[playlistIdxRef.current].tracks[trackIdxRef.current]
+          allPlaylists[playlistIdxRef.current].tracks[trackIdxRef.current]
             .videoId || "",
         playerVars: {
           playsinline: 1,
@@ -688,7 +978,7 @@ export default function RadioPlayer() {
             }
           },
           onError: (e: { data: number }) => {
-            const pl = playlists[playlistIdxRef.current];
+            const pl = allPlaylists[playlistIdxRef.current];
             const t = pl.tracks[trackIdxRef.current];
             track("youtube_error", {
               errorCode: e.data,
@@ -753,7 +1043,7 @@ export default function RadioPlayer() {
   }, [isPlaying]);
 
   return (
-    <div className="w-full flex flex-col gap-4">
+    <div className="w-full flex flex-col gap-2">
       {/* YouTube Player - Must be visible (not 1px, not offscreen, opacity > 0) to comply with YouTube terms. 
           We place it absolutely behind the player UI with near-zero opacity. */}
       <div
@@ -764,13 +1054,51 @@ export default function RadioPlayer() {
         <div id="yt-player-slot" className="w-full h-full" />
       </div>
 
+      <PromptModal
+        isOpen={promptConfig.isOpen}
+        title={promptConfig.title}
+        placeholder={promptConfig.placeholder}
+        onSubmit={handlePromptSubmit}
+        onCancel={() => setPromptConfig({ ...promptConfig, isOpen: false })}
+      />
+      
+      {/* ─── Fast Playlist Switcher ─── */}
+      <div className="flex justify-center w-full">
+        <PlaylistTabs 
+          activeIdx={playlistIdx} 
+          onSwitch={(idx) => {
+            setPlaylistIdx(idx);
+            const pl = allPlaylists[idx];
+            if (pl && pl.tracks.length > 0) {
+               setTrackIdx(Math.floor(Math.random() * pl.tracks.length));
+            } else {
+               setTrackIdx(0);
+            }
+            setElapsed(0);
+            if (!isPlaying) setIsPlaying(true);
+          }} 
+          allPlaylists={allPlaylists}
+          onCreatePlaylist={() => setPromptConfig({ isOpen: true, title: "Create New Playlist", placeholder: "Enter playlist name", action: "CREATE" })}
+          onImportPlaylist={() => setPromptConfig({ isOpen: true, title: "Import YouTube Playlist", placeholder: "Paste YouTube Playlist URL", action: "IMPORT" })}
+          isImporting={isImporting}
+        />
+      </div>
+
       {/* ─── Inline Playlist (no overlay, player stays accessible) ─── */}
       {showPlaylist && (
         <TrackListModal
           activePlaylistIdx={playlistIdx}
           currentTrackIdx={trackIdx}
           isPlaying={isPlaying}
+          allPlaylists={allPlaylists}
+          customPlaylists={customPlaylists}
           onSelectTrack={selectTrackFromModal}
+          onAddTrack={handleAddTrack}
+          onRemoveTrack={handleRemoveTrack}
+          onCreatePlaylist={() => setPromptConfig({ isOpen: true, title: "Create New Playlist", placeholder: "Enter playlist name", action: "CREATE" })}
+          onImportPlaylist={() => setPromptConfig({ isOpen: true, title: "Import YouTube Playlist", placeholder: "Paste YouTube Playlist URL", action: "IMPORT" })}
+          isImporting={isImporting}
+          onDeletePlaylist={handleDeletePlaylist}
           onClose={() => setShowPlaylist(false)}
         />
       )}
@@ -902,6 +1230,50 @@ export default function RadioPlayer() {
               <line x1="3" y1="18" x2="3.01" y2="18"></line>
             </svg>
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+function PromptModal({
+  isOpen,
+  title,
+  placeholder,
+  onSubmit,
+  onCancel
+}: {
+  isOpen: boolean;
+  title: string;
+  placeholder: string;
+  onSubmit: (val: string) => void;
+  onCancel: () => void;
+}) {
+  const [val, setVal] = useState("");
+
+  useEffect(() => {
+    if (isOpen) setVal("");
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in pointer-events-auto">
+      <div className="bg-[#0f0f13] border border-white/10 rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4">
+        <h3 className="text-lg font-display text-white">{title}</h3>
+        <input 
+          autoFocus
+          type="text" 
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          placeholder={placeholder}
+          onKeyDown={(e) => { if (e.key === 'Enter') onSubmit(val); else if (e.key === 'Escape') onCancel(); }}
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-amber-accent"
+        />
+        <div className="flex gap-3 justify-end mt-2">
+          <button onClick={onCancel} className="px-4 py-2 rounded-full text-xs font-bold text-white/50 hover:text-white transition-colors">CANCEL</button>
+          <button onClick={() => onSubmit(val)} className="px-5 py-2 rounded-full text-xs font-bold bg-amber-accent text-black hover:opacity-90 transition-opacity">CONFIRM</button>
         </div>
       </div>
     </div>

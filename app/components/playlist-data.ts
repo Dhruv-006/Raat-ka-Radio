@@ -19,6 +19,49 @@ export interface Playlist {
 
 export const playlists: Playlist[] = [
   {
+    id: "subah-ka-sukoon",
+    name: "SUBAH KA SUKOON",
+    icon: "🌅",
+    description: "Fresh, energetic, morning vibes.",
+    time: "7 AM – 12 PM",
+    tracks: [
+      { id: "sksu-1", title: "Khaabon Ke Parinday", artist: "Alyssa Mendonsa, Mohit Chauhan", film: "Zindagi Na Milegi Dobara", year: 2011, duration: 295, videoId: "xZAXVM1rSbk" },
+      { id: "sksu-2", title: "Ilahi", artist: "Arijit Singh", film: "Yeh Jawaani Hai Deewani", year: 2013, duration: 222, videoId: "4ehgyK5dQfE" },
+      { id: "sksu-3", title: "Love You Zindagi", artist: "Jasleen Royal", film: "Dear Zindagi", year: 2016, duration: 248, videoId: "rwn0Zs7ELzc" },
+      { id: "sksu-4", title: "Safarnama", artist: "Lucky Ali", film: "Tamasha", year: 2015, duration: 288, videoId: "sOhESxhibAM" },
+      { id: "sksu-5", title: "Aashiyan", artist: "Shreya Ghoshal, Nikhil Paul George", film: "Barfi!", year: 2012, duration: 253, videoId: "OuNGySNJjWg" },
+      { id: "sksu-6", title: "Patakha Guddi", artist: "Nooran Sisters", film: "Highway", year: 2014, duration: 307, videoId: "rwZDGFuA0xE" }
+    ],
+  },
+  {
+    id: "dopahar-ki-dhoop",
+    name: "DOPAHAR KI DHOOP",
+    icon: "☕",
+    description: "Lazy afternoon, mellow, acoustic.",
+    time: "12 PM – 4 PM",
+    tracks: [
+      { id: "dkd-1", title: "Phir Se Ud Chala", artist: "Mohit Chauhan", film: "Rockstar", year: 2011, duration: 283, videoId: "-3gQ6HIkRys" },
+      { id: "dkd-2", title: "Kyon", artist: "Papon, Sunidhi Chauhan", film: "Barfi!", year: 2012, duration: 230, videoId: "aQHled_gLxU" },
+      { id: "dkd-3", title: "Yun Hi Chala Chal", artist: "Udit Narayan, Hariharan", film: "Swades", year: 2004, duration: 367, videoId: "fXi5ThNAM0w" },
+      { id: "dkd-4", title: "Aao Milo Chalo", artist: "Shaan", film: "Jab We Met", year: 2007, duration: 280, videoId: "u7hfwX81bY4" },
+      { id: "dkd-5", title: "Iktara", artist: "Kavita Seth", film: "Wake Up Sid", year: 2009, duration: 234, videoId: "ZlOZktsODpA" }
+    ],
+  },
+  {
+    id: "chai-aur-chill",
+    name: "CHAI AUR CHILL",
+    icon: "🌇",
+    description: "Relaxing evening transitions.",
+    time: "4 PM – 6 PM",
+    tracks: [
+      { id: "cac-1", title: "Shaam", artist: "Amit Trivedi, Neuman Pinto", film: "Aisha", year: 2010, duration: 265, videoId: "v_hJOCzvABU" },
+      { id: "cac-2", title: "Tum Se Hi", artist: "Mohit Chauhan", film: "Jab We Met", year: 2007, duration: 325, videoId: "01HR1uP4kic" },
+      { id: "cac-3", title: "Kahin To Hogi Woh", artist: "Rashid Ali, Vasundhara Das", film: "Jaane Tu Ya Jaane Na", year: 2008, duration: 310, videoId: "QGinK1vaK5M" },
+      { id: "cac-4", title: "Tu Bin Bataye", artist: "Madhushree, Naresh Iyer", film: "Rang De Basanti", year: 2006, duration: 335, videoId: "jI7FFN4wW5E" },
+      { id: "cac-5", title: "Dooba Dooba", artist: "Mohit Chauhan", film: "Silk Route", year: 1998, duration: 282, videoId: "ecPMVO7JuTo" }
+    ],
+  },
+  {
     id: "shaam-ka-sheher",
     name: "SHAAM KA SHEHER",
     icon: "🌆",
