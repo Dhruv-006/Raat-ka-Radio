@@ -54,9 +54,11 @@ function formatTime(seconds: number): string {
 function VinylDisc({
   isPlaying,
   size,
+  videoId,
 }: {
   isPlaying: boolean;
   size: "sm" | "lg";
+  videoId?: string;
 }) {
   const dim = size === "sm" ? "w-14 h-14" : "w-[72px] h-[72px]";
   return (
@@ -85,8 +87,18 @@ function VinylDisc({
       />
 
       {/* Centre label with amber accent */}
-      <div className="absolute inset-0 m-auto w-1/3 h-1/3 rounded-full bg-gradient-to-br from-amber-accent/30 to-amber-deep/20 border border-amber-accent/20 z-20 flex items-center justify-center">
-        <div className="w-1.5 h-1.5 rounded-full bg-amber-accent/60" />
+      <div className="absolute inset-0 m-auto w-[38%] h-[38%] rounded-full bg-[#111] border border-amber-accent/20 z-20 flex items-center justify-center overflow-hidden">
+        {videoId ? (
+          <img
+            src={`https://img.youtube.com/vi/${videoId}/default.jpg`}
+            alt=""
+            referrerPolicy="no-referrer"
+            className="absolute inset-0 w-full h-full object-cover opacity-80"
+          />
+        ) : (
+          <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-amber-accent/30 to-amber-deep/20" />
+        )}
+        <div className="relative w-2 h-2 rounded-full bg-[#111] border border-white/20 z-30" />
       </div>
     </div>
   );
@@ -372,7 +384,7 @@ function TrackListModal({
   const viewPlaylist = allPlaylists[viewIdx] || allPlaylists[0];
   const [copied, setCopied] = useState(false);
   const [addMenuOpenFor, setAddMenuOpenFor] = useState<string | null>(null);
-  
+
   const categoryScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -419,25 +431,25 @@ function TrackListModal({
                 key={pl.id}
                 onClick={() => setViewIdx(idx)}
                 className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase whitespace-nowrap transition-all flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent ${viewIdx === idx
-                    ? "bg-white/[0.12] text-amber-accent shadow-sm ring-1 ring-white/10"
-                    : "text-white/35 hover:text-white/60 hover:bg-white/[0.04]"
+                  ? "bg-white/[0.12] text-amber-accent shadow-sm ring-1 ring-white/10"
+                  : "text-white/35 hover:text-white/60 hover:bg-white/[0.04]"
                   }`}
               >
                 {pl.icon} {pl.name.length > 20 ? pl.name.substring(0, 18) + '...' : pl.name}
               </button>
             ))}
             <button
-                onClick={onCreatePlaylist}
-                className="px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase whitespace-nowrap transition-all flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent text-white/35 hover:text-white/60 hover:bg-white/[0.04] border border-dashed border-white/20"
-              >
-                + NEW PLAYLIST
+              onClick={onCreatePlaylist}
+              className="px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase whitespace-nowrap transition-all flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent text-white/35 hover:text-white/60 hover:bg-white/[0.04] border border-dashed border-white/20"
+            >
+              + NEW PLAYLIST
             </button>
             <button
-                onClick={onImportPlaylist}
-                disabled={isImporting}
-                className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase whitespace-nowrap transition-all flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 border border-dashed border-red-500/30 ${isImporting ? 'text-red-400/50 cursor-not-allowed' : 'text-red-400/80 hover:text-red-400 hover:bg-red-500/10'}`}
-              >
-                {isImporting ? "⏳ IMPORTING..." : "📥 IMPORT YT PLAYLIST"}
+              onClick={onImportPlaylist}
+              disabled={isImporting}
+              className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase whitespace-nowrap transition-all flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 border border-dashed border-red-500/30 ${isImporting ? 'text-red-400/50 cursor-not-allowed' : 'text-red-400/80 hover:text-red-400 hover:bg-red-500/10'}`}
+            >
+              {isImporting ? "⏳ IMPORTING..." : "📥 IMPORT YT PLAYLIST"}
             </button>
           </div>
           <div className="flex items-center justify-between px-1 pb-3">
@@ -476,62 +488,62 @@ function TrackListModal({
               <div
                 key={track.id + idx}
                 className={`w-full text-left flex items-center gap-3.5 px-3 py-2.5 rounded-2xl transition-all duration-150 group ${isCurrent
-                    ? "bg-white/[0.08]"
-                    : "hover:bg-white/[0.04]"
+                  ? "bg-white/[0.08]"
+                  : "hover:bg-white/[0.04]"
                   } relative`}
               >
-                <button 
+                <button
                   onClick={() => { onSelectTrack(viewIdx, idx); }}
                   className="absolute inset-0 w-full h-full cursor-pointer rounded-2xl z-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent"
                   aria-label={`Play ${track.title}`}
                 />
-                <div className="relative z-10 flex items-center gap-3.5 w-full pointer-events-none">
-                {/* Track number or playing indicator */}
-                <div className={`w-5 text-center text-xs font-semibold tabular-nums flex-shrink-0 ${isCurrent ? "text-amber-accent" : "text-white/25 group-hover:text-white/50"}`}>
-                  {isNowPlaying ? (
-                    <div className="flex items-end justify-center gap-[2px] h-3.5 mx-auto">
-                      <span className="w-[3px] bg-amber-accent rounded-full animate-[eq1_0.8s_ease-in-out_infinite]" style={{ height: '40%' }} />
-                      <span className="w-[3px] bg-amber-accent rounded-full animate-[eq2_0.6s_ease-in-out_infinite]" style={{ height: '70%' }} />
-                      <span className="w-[3px] bg-amber-accent rounded-full animate-[eq3_0.7s_ease-in-out_infinite]" style={{ height: '50%' }} />
+                <div className="relative z-10 flex items-center gap-3.5 flex-1 min-w-0 pointer-events-none">
+                  {/* Track number or playing indicator */}
+                  <div className={`w-5 text-center text-xs font-semibold tabular-nums flex-shrink-0 ${isCurrent ? "text-amber-accent" : "text-white/25 group-hover:text-white/50"}`}>
+                    {isNowPlaying ? (
+                      <div className="flex items-end justify-center gap-[2px] h-3.5 mx-auto">
+                        <span className="w-[3px] bg-amber-accent rounded-full animate-[eq1_0.8s_ease-in-out_infinite]" style={{ height: '40%' }} />
+                        <span className="w-[3px] bg-amber-accent rounded-full animate-[eq2_0.6s_ease-in-out_infinite]" style={{ height: '70%' }} />
+                        <span className="w-[3px] bg-amber-accent rounded-full animate-[eq3_0.7s_ease-in-out_infinite]" style={{ height: '50%' }} />
+                      </div>
+                    ) : isCurrent ? (
+                      <svg className="w-3.5 h-3.5 mx-auto" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+                    ) : (
+                      idx + 1
+                    )}
+                  </div>
+
+                  {/* Thumbnail */}
+                  <div className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-white/5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`https://img.youtube.com/vi/${track.videoId}/default.jpg`}
+                      referrerPolicy="no-referrer"
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    {isCurrent && (
+                      <div className="absolute inset-0 ring-2 ring-inset ring-amber-accent/60 rounded-lg" />
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 overflow-hidden min-w-0">
+                    <div className={`truncate text-[13px] font-semibold leading-snug ${isCurrent ? "text-amber-accent" : "text-white/90 group-hover:text-white"}`}>
+                      {track.title}
                     </div>
-                  ) : isCurrent ? (
-                    <svg className="w-3.5 h-3.5 mx-auto" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
-                  ) : (
-                    idx + 1
-                  )}
-                </div>
-
-                {/* Thumbnail */}
-                <div className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-white/5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`https://img.youtube.com/vi/${track.videoId}/default.jpg`}
-                    referrerPolicy="no-referrer"
-                    alt=""
-                    className="absolute inset-0 w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  {isCurrent && (
-                    <div className="absolute inset-0 ring-2 ring-inset ring-amber-accent/60 rounded-lg" />
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 overflow-hidden min-w-0">
-                  <div className={`truncate text-[13px] font-semibold leading-snug ${isCurrent ? "text-amber-accent" : "text-white/90 group-hover:text-white"}`}>
-                    {track.title}
+                    <div className="truncate text-[11px] text-white/35 mt-0.5 group-hover:text-white/55">
+                      {track.artist}{track.film ? ` · ${track.film}` : ""}
+                    </div>
                   </div>
-                  <div className="truncate text-[11px] text-white/35 mt-0.5 group-hover:text-white/55">
-                    {track.artist}{track.film ? ` · ${track.film}` : ""}
-                  </div>
+
+                  {/* Duration */}
+                  <span className="text-[10px] text-white/20 font-medium tabular-nums flex-shrink-0 hidden sm:block mr-2">
+                    {formatTime(track.duration)}
+                  </span>
                 </div>
 
-                {/* Duration */}
-                <span className="text-[10px] text-white/20 font-medium tabular-nums flex-shrink-0 hidden sm:block mr-2">
-                  {formatTime(track.duration)}
-                </span>
-                </div>
-                
                 {/* Actions */}
                 <div className="relative z-20 flex-shrink-0">
                   {viewPlaylist.id.startsWith("custom-") ? (
@@ -540,7 +552,7 @@ function TrackListModal({
                       className="p-1.5 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                       title="Remove from playlist"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" /></svg>
                     </button>
                   ) : (
                     <div className="relative">
@@ -551,7 +563,7 @@ function TrackListModal({
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                       </button>
-                      
+
                       {addMenuOpenFor === track.id && (
                         <div className="absolute right-0 top-full mt-1 w-48 bg-[#1e150f] border border-white/10 rounded-xl shadow-xl overflow-hidden py-1 z-50 animate-fade-in origin-top-right">
                           <div className="px-3 py-1.5 text-[10px] font-semibold text-white/40 uppercase tracking-wider">Add to Playlist</div>
@@ -579,7 +591,7 @@ function TrackListModal({
         </div>
 
         {/* Footer */}
-        <button 
+        <button
           onClick={handleShare}
           className="w-full text-left px-5 py-3.5 border-t border-white/5 flex items-center gap-3 hover:bg-white/[0.04] transition-colors focus-visible:outline-none focus-visible:bg-white/[0.04]"
         >
@@ -694,7 +706,7 @@ export default function RadioPlayer() {
     // Smart initialization
     const hour = new Date().getHours();
     let defaultIdx = 0;
-    
+
     if (hour >= 7 && hour < 12) defaultIdx = 0;       // SUBAH KA SUKOON
     else if (hour >= 12 && hour < 16) defaultIdx = 1; // DOPAHAR KI DHOOP
     else if (hour >= 16 && hour < 18) defaultIdx = 2; // CHAI AUR CHILL
@@ -704,9 +716,9 @@ export default function RadioPlayer() {
     else if (hour >= 1 && hour < 3) defaultIdx = 6;   // 2 BAJE
     else if (hour >= 3 && hour < 5) defaultIdx = 7;   // HIGHWAY MODE
     else if (hour >= 5 && hour < 7) defaultIdx = 8;   // SUBAH HONE WALI HAI
-    
+
     setPlaylistIdx(defaultIdx);
-    
+
     // Pick random track
     const pl = playlists[defaultIdx];
     if (pl && pl.tracks.length > 0) {
@@ -765,7 +777,7 @@ export default function RadioPlayer() {
     try {
       const res = await fetch(`/api/youtube/import?playlistId=${playlistId}`);
       const data = await res.json();
-      
+
       if (!res.ok) throw new Error(data.error || "Failed to import");
 
       const newPlaylist: Playlist = {
@@ -808,7 +820,7 @@ export default function RadioPlayer() {
     if (!val || !val.trim()) return;
     const action = promptConfig.action;
     setPromptConfig({ ...promptConfig, isOpen: false });
-    
+
     if (action === "CREATE") {
       processCreate(val);
     } else if (action === "IMPORT") {
@@ -1043,7 +1055,7 @@ export default function RadioPlayer() {
   }, [isPlaying]);
 
   return (
-    <div className="w-full flex flex-col gap-2">
+    <div className="w-full flex flex-col gap-4">
       {/* YouTube Player - Must be visible (not 1px, not offscreen, opacity > 0) to comply with YouTube terms. 
           We place it absolutely behind the player UI with near-zero opacity. */}
       <div
@@ -1061,22 +1073,22 @@ export default function RadioPlayer() {
         onSubmit={handlePromptSubmit}
         onCancel={() => setPromptConfig({ ...promptConfig, isOpen: false })}
       />
-      
+
       {/* ─── Fast Playlist Switcher ─── */}
       <div className="flex justify-center w-full">
-        <PlaylistTabs 
-          activeIdx={playlistIdx} 
+        <PlaylistTabs
+          activeIdx={playlistIdx}
           onSwitch={(idx) => {
             setPlaylistIdx(idx);
             const pl = allPlaylists[idx];
             if (pl && pl.tracks.length > 0) {
-               setTrackIdx(Math.floor(Math.random() * pl.tracks.length));
+              setTrackIdx(Math.floor(Math.random() * pl.tracks.length));
             } else {
-               setTrackIdx(0);
+              setTrackIdx(0);
             }
             setElapsed(0);
             if (!isPlaying) setIsPlaying(true);
-          }} 
+          }}
           allPlaylists={allPlaylists}
           onCreatePlaylist={() => setPromptConfig({ isOpen: true, title: "Create New Playlist", placeholder: "Enter playlist name", action: "CREATE" })}
           onImportPlaylist={() => setPromptConfig({ isOpen: true, title: "Import YouTube Playlist", placeholder: "Paste YouTube Playlist URL", action: "IMPORT" })}
@@ -1102,14 +1114,13 @@ export default function RadioPlayer() {
           onClose={() => setShowPlaylist(false)}
         />
       )}
-      \
 
       {/* ─── DESKTOP Player ─── */}
       <div
         className="hidden sm:flex items-center gap-4 rounded-full p-3 pr-5 w-full glass-panel"
       >
         {/* Vinyl */}
-        <VinylDisc isPlaying={isPlaying} size="lg" />
+        <VinylDisc isPlaying={isPlaying} size="lg" videoId={currentTrack.videoId} />
 
         {/* Track Info + Seek */}
         <div className="flex-1 flex flex-col gap-0.5 overflow-hidden min-w-0">
@@ -1129,6 +1140,11 @@ export default function RadioPlayer() {
           <span className="text-[10.5px] text-tabular text-white/35 font-medium whitespace-nowrap mr-2">
             {formatTime(elapsed)} / {formatTime(duration)}
           </span>
+          <AddToPlaylistMenu
+            currentTrack={currentTrack}
+            customPlaylists={customPlaylists}
+            onAddTrack={handleAddTrack}
+          />
           <Transport
             isPlaying={isPlaying}
             onPrev={goPrev}
@@ -1158,7 +1174,7 @@ export default function RadioPlayer() {
       <div className="sm:hidden flex flex-col gap-5 glass-panel rounded-[26px] p-5 w-full relative overflow-hidden">
         {/* Row 1: Vinyl + Info */}
         <div className="flex items-center gap-4">
-          <VinylDisc isPlaying={isPlaying} size="lg" />
+          <VinylDisc isPlaying={isPlaying} size="lg" videoId={currentTrack.videoId} />
           <div className="flex-1 overflow-hidden min-w-0">
             <div className="truncate text-[17px] font-bold text-white leading-tight">
               {currentTrack.title}
@@ -1216,6 +1232,12 @@ export default function RadioPlayer() {
             <VolumeControl playerRef={playerRef} />
           </div>
 
+          <AddToPlaylistMenu
+            currentTrack={currentTrack}
+            customPlaylists={customPlaylists}
+            onAddTrack={handleAddTrack}
+          />
+
           <button
             onClick={() => setShowPlaylist(p => !p)}
             aria-label={showPlaylist ? "Hide Playlist" : "Show Playlist"}
@@ -1236,6 +1258,59 @@ export default function RadioPlayer() {
   );
 }
 
+
+function AddToPlaylistMenu({
+  currentTrack,
+  customPlaylists,
+  onAddTrack
+}: {
+  currentTrack: Track;
+  customPlaylists: Playlist[];
+  onAddTrack: (track: Track, playlistId: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-10 h-10 flex items-center justify-center rounded-full transition-all hover:bg-white/5 text-white/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent"
+        title="Add to custom playlist"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-0 bottom-full mb-2 w-48 bg-[#1e150f] border border-white/10 rounded-xl shadow-xl overflow-hidden py-1 z-50 animate-fade-in origin-bottom-right">
+            <div className="px-3 py-1.5 text-[10px] font-semibold text-white/40 uppercase tracking-wider">Add to Playlist</div>
+            {customPlaylists.length === 0 ? (
+              <div className="px-3 py-2 text-xs text-white/50 italic">No custom playlists yet. Create one first!</div>
+            ) : (
+              customPlaylists.map(cp => (
+                <button
+                  key={cp.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddTrack(currentTrack, cp.id);
+                    setIsOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs text-white/80 hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:bg-white/10"
+                >
+                  {cp.icon} {cp.name}
+                </button>
+              ))
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 function PromptModal({
   isOpen,
@@ -1262,9 +1337,9 @@ function PromptModal({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in pointer-events-auto">
       <div className="bg-[#0f0f13] border border-white/10 rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4">
         <h3 className="text-lg font-display text-white">{title}</h3>
-        <input 
+        <input
           autoFocus
-          type="text" 
+          type="text"
           value={val}
           onChange={(e) => setVal(e.target.value)}
           placeholder={placeholder}
