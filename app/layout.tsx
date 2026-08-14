@@ -3,6 +3,7 @@ import { Playfair_Display, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
+import InstallAppPrompt from "./components/InstallAppPrompt";
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-display",
@@ -57,6 +58,7 @@ export default function RootLayout({
       className={`${playfairDisplay.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-dvh flex flex-col bg-midnight text-cream">
+        <InstallAppPrompt />
         {children}
         <Analytics />
         <SpeedInsights />
