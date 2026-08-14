@@ -365,6 +365,7 @@ function TrackListModal({
   onImportPlaylist,
   isImporting,
   onDeletePlaylist,
+  onRenamePlaylist,
 }: {
   activePlaylistIdx: number;
   currentTrackIdx: number;
@@ -379,6 +380,7 @@ function TrackListModal({
   onImportPlaylist: () => void;
   isImporting: boolean;
   onDeletePlaylist: (id: string) => void;
+  onRenamePlaylist: (id: string, currentName: string) => void;
 }) {
   const [viewIdx, setViewIdx] = useState(activePlaylistIdx);
   const viewPlaylist = allPlaylists[viewIdx] || allPlaylists[0];
@@ -458,16 +460,24 @@ function TrackListModal({
                 {viewPlaylist.tracks.length} tracks · {viewPlaylist.time}
               </p>
               {viewPlaylist.id.startsWith("custom-") && (
-                <button
-                  onClick={() => {
-                    if (window.confirm("Are you sure you want to delete this playlist?")) {
-                      onDeletePlaylist(viewPlaylist.id);
-                    }
-                  }}
-                  className="px-2 py-1 rounded text-[9px] font-bold tracking-widest uppercase text-red-400/50 hover:text-red-400 hover:bg-red-400/10 transition-colors"
-                >
-                  Delete Playlist
-                </button>
+                <>
+                  <button
+                    onClick={() => onRenamePlaylist(viewPlaylist.id, viewPlaylist.name)}
+                    className="px-2 py-1 rounded text-[9px] font-bold tracking-widest uppercase text-amber-400/50 hover:text-amber-400 hover:bg-amber-400/10 transition-colors"
+                  >
+                    Rename
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (window.confirm("Are you sure you want to delete this playlist?")) {
+                        onDeletePlaylist(viewPlaylist.id);
+                      }
+                    }}
+                    className="px-2 py-1 rounded text-[9px] font-bold tracking-widest uppercase text-red-400/50 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </>
               )}
             </div>
             <button
@@ -688,7 +698,8 @@ export default function RadioPlayer() {
     isOpen: boolean;
     title: string;
     placeholder: string;
-    action: "CREATE" | "IMPORT" | null;
+    action: "CREATE" | "IMPORT" | "RENAME" | null;
+    targetId?: string;
   }>({ isOpen: false, title: "", placeholder: "", action: null });
   const [trackIdx, setTrackIdx] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -745,7 +756,13 @@ export default function RadioPlayer() {
   const allPlaylists = React.useMemo(() => [...playlists, ...customPlaylists], [customPlaylists]);
 
   const playlist = allPlaylists[playlistIdx] || allPlaylists[0];
-  const currentTrack = playlist?.tracks[trackIdx] || playlists[0].tracks[0];
+  const currentTrack = playlist?.tracks[trackIdx] || (playlist?.tracks.length === 0 ? {
+    id: "empty",
+    title: "Empty Playlist",
+    artist: "Add songs to start listening",
+    videoId: "",
+    duration: 0,
+  } : playlists[0].tracks[0]);
 
   // Keep refs in sync
   useEffect(() => {
@@ -818,13 +835,20 @@ export default function RadioPlayer() {
 
   const handlePromptSubmit = (val: string) => {
     if (!val || !val.trim()) return;
-    const action = promptConfig.action;
+    const { action, targetId } = promptConfig;
     setPromptConfig({ ...promptConfig, isOpen: false });
 
     if (action === "CREATE") {
       processCreate(val);
     } else if (action === "IMPORT") {
       processImport(val);
+    } else if (action === "RENAME" && targetId) {
+      setCustomPlaylists(prev => prev.map(p => {
+        if (p.id === targetId) {
+          return { ...p, name: val.trim().toUpperCase() };
+        }
+        return p;
+      }));
     }
   };
 
@@ -857,6 +881,7 @@ export default function RadioPlayer() {
 
   const goNext = useCallback(() => {
     const pl = allPlaylists[playlistIdxRef.current];
+    if (!pl || pl.tracks.length === 0) return;
     const nextIdx = (trackIdxRef.current + 1) % pl.tracks.length;
     track("next", { playlist: pl.name, track: pl.tracks[nextIdx].title });
     setTrackIdx(nextIdx);
@@ -865,6 +890,7 @@ export default function RadioPlayer() {
 
   const goPrev = useCallback(() => {
     const pl = allPlaylists[playlistIdxRef.current];
+    if (!pl || pl.tracks.length === 0) return;
     if (playerRef.current && playerRef.current.getCurrentTime() > 3) {
       playerRef.current.seekTo(0, true);
       setElapsed(0);
@@ -886,6 +912,7 @@ export default function RadioPlayer() {
   const togglePlay = useCallback(() => {
     if (!playerRef.current) return;
     const pl = allPlaylists[playlistIdxRef.current];
+    if (!pl || pl.tracks.length === 0) return;
     const t = pl.tracks[trackIdxRef.current];
 
     if (isPlaying) {
@@ -946,6 +973,7 @@ export default function RadioPlayer() {
   useEffect(() => {
     const goNextRef = () => {
       const pl = allPlaylists[playlistIdxRef.current];
+      if (!pl || pl.tracks.length === 0) return;
       const nextIdx = (trackIdxRef.current + 1) % pl.tracks.length;
       track("next", { playlist: pl.name, track: pl.tracks[nextIdx].title });
       setTrackIdx(nextIdx);
@@ -1083,11 +1111,13 @@ export default function RadioPlayer() {
             const pl = allPlaylists[idx];
             if (pl && pl.tracks.length > 0) {
               setTrackIdx(Math.floor(Math.random() * pl.tracks.length));
+              setElapsed(0);
+              if (!isPlaying) setIsPlaying(true);
             } else {
               setTrackIdx(0);
+              setElapsed(0);
+              if (isPlaying) setIsPlaying(false);
             }
-            setElapsed(0);
-            if (!isPlaying) setIsPlaying(true);
           }}
           allPlaylists={allPlaylists}
           onCreatePlaylist={() => setPromptConfig({ isOpen: true, title: "Create New Playlist", placeholder: "Enter playlist name", action: "CREATE" })}
@@ -1111,6 +1141,7 @@ export default function RadioPlayer() {
           onImportPlaylist={() => setPromptConfig({ isOpen: true, title: "Import YouTube Playlist", placeholder: "Paste YouTube Playlist URL", action: "IMPORT" })}
           isImporting={isImporting}
           onDeletePlaylist={handleDeletePlaylist}
+          onRenamePlaylist={(id, currentName) => setPromptConfig({ isOpen: true, title: "Rename Playlist", placeholder: currentName, action: "RENAME", targetId: id })}
           onClose={() => setShowPlaylist(false)}
         />
       )}
