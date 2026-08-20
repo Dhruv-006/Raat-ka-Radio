@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📻 Raat Ka Radio
 
-## Getting Started
+A beautiful, modern web-based radio player built with **Next.js**, **React**, and **Tailwind CSS**. Raat Ka Radio offers a seamless listening experience with carefully curated built-in playlists and an advanced YouTube import system to bring your own music to life in a stunning interface.
 
-First, run the development server:
+---
 
+## ✨ Features
+
+- 🎧 **Curated Playlists:** Enjoy built-in themes like *Subah Ka Sukoon*, *Lofi Mix*, and *Late Night Drives*.
+- 💿 **Beautiful UI:** Features an interactive spinning vinyl player, dynamic glassmorphism design, and smooth transitions.
+- 📥 **YouTube Playlist Import:** Instantly import full YouTube playlists using just the URL. Includes automatic pagination to fetch all tracks (bypassing the 50-video limit) while skipping private/deleted videos.
+- 🎵 **Add Single Songs:** Easily add single YouTube tracks to your custom playlists via URLs (`youtube.com`, `youtu.be`, `shorts`) or raw video IDs.
+- 🚫 **Smart Deduplication:** Automatically prevents adding duplicate songs to the same playlist.
+- 🔄 **Custom Playlist Management:** Create, rename, delete, and switch between your personal custom playlists effortlessly.
+- 📺 **YouTube Player Integration:** Uses the official YouTube IFrame API for highly reliable and compliant playback.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework:** [Next.js](https://nextjs.org) (App Router, Turbopack)
+- **Library:** [React 19](https://react.dev)
+- **Language:** TypeScript
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **External Services:** YouTube Data API v3 & YouTube IFrame Player API
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to run the project locally.
+
+### 1. Clone the repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/Dhruv-006/Raat-ka-Radio.git
+cd Raat-ka-Radio
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install dependencies
+```bash
+npm install
+# or
+yarn install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Setup Environment Variables
+Create a `.env.local` file in the root of your project and add your YouTube Data API Key:
+```env
+YOUTUBE_API_KEY=your_youtube_data_api_key_here
+```
+*(You can get a free API key from the [Google Cloud Console](https://console.cloud.google.com/))*
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Run the development server
+```bash
+npm run dev
+```
 
-## Learn More
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the app running.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📜 Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `npm run dev` - Starts the local development server.
+- `npm run build` - Builds the application for production deployment.
+- `npm run start` - Starts a production server based on the generated build.
+- `npm run lint` - Runs ESLint to check for code issues.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🌐 Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is optimized for deployment on the [Vercel Platform](https://vercel.com/). Simply connect your GitHub repository to Vercel, provide the `YOUTUBE_API_KEY` in the Vercel Environment Variables, and deploy.
+
+---
+
+*Enjoy the vibes of Raat Ka Radio! 🌙🎶*
