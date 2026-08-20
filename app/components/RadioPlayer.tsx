@@ -257,14 +257,18 @@ function PlaylistTabs({
   allPlaylists,
   onCreatePlaylist,
   onImportPlaylist,
+  onAddSong,
   isImporting,
+  importProgress,
 }: {
   activeIdx: number;
   onSwitch: (idx: number) => void;
   allPlaylists: Playlist[];
   onCreatePlaylist: () => void;
   onImportPlaylist: () => void;
+  onAddSong: () => void;
   isImporting: boolean;
+  importProgress: string;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -340,11 +344,18 @@ function PlaylistTabs({
           + New Playlist
         </button>
         <button
+          onClick={onAddSong}
+          disabled={isImporting}
+          className={`relative px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest transition-all duration-200 flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent whitespace-nowrap flex-shrink-0 uppercase disabled:opacity-50 disabled:cursor-not-allowed border border-dashed border-amber-accent/30 ${isImporting ? 'text-amber-accent/50 cursor-not-allowed' : 'text-amber-accent/80 hover:text-amber-accent hover:bg-amber-accent/10'}`}
+        >
+          🎵 ADD SONG
+        </button>
+        <button
           onClick={onImportPlaylist}
           disabled={isImporting}
           className={`relative px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest transition-all duration-200 flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 whitespace-nowrap flex-shrink-0 uppercase disabled:opacity-50 disabled:cursor-not-allowed border border-dashed border-red-500/30 ${isImporting ? 'text-red-400/50 cursor-not-allowed' : 'text-red-400/80 hover:text-red-400 hover:bg-red-500/10'}`}
         >
-          {isImporting ? "⏳ IMPORTING..." : "📥 IMPORT YT PLAYLIST"}
+          {isImporting ? `⏳ ${importProgress || 'IMPORTING...'}` : "📥 IMPORT YT PLAYLIST"}
         </button>
       </div>
     </div>
@@ -363,7 +374,9 @@ function TrackListModal({
   onRemoveTrack,
   onCreatePlaylist,
   onImportPlaylist,
+  onAddSong,
   isImporting,
+  importProgress,
   onDeletePlaylist,
   onRenamePlaylist,
 }: {
@@ -378,7 +391,9 @@ function TrackListModal({
   onRemoveTrack: (trackId: string, playlistId: string) => void;
   onCreatePlaylist: () => void;
   onImportPlaylist: () => void;
+  onAddSong: () => void;
   isImporting: boolean;
+  importProgress: string;
   onDeletePlaylist: (id: string) => void;
   onRenamePlaylist: (id: string, currentName: string) => void;
 }) {
@@ -447,11 +462,18 @@ function TrackListModal({
               + NEW PLAYLIST
             </button>
             <button
+              onClick={onAddSong}
+              disabled={isImporting}
+              className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase whitespace-nowrap transition-all flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent border border-dashed border-amber-accent/30 ${isImporting ? 'text-amber-accent/50 cursor-not-allowed' : 'text-amber-accent/80 hover:text-amber-accent hover:bg-amber-accent/10'}`}
+            >
+              🎵 ADD SONG
+            </button>
+            <button
               onClick={onImportPlaylist}
               disabled={isImporting}
               className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase whitespace-nowrap transition-all flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 border border-dashed border-red-500/30 ${isImporting ? 'text-red-400/50 cursor-not-allowed' : 'text-red-400/80 hover:text-red-400 hover:bg-red-500/10'}`}
             >
-              {isImporting ? "⏳ IMPORTING..." : "📥 IMPORT YT PLAYLIST"}
+              {isImporting ? `⏳ ${importProgress || 'IMPORTING...'}` : "📥 IMPORT YT PLAYLIST"}
             </button>
           </div>
           <div className="flex items-center justify-between px-1 pb-3">
@@ -693,12 +715,14 @@ export default function RadioPlayer() {
   const [customPlaylists, setCustomPlaylists] = useState<Playlist[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState<string>("");
+  const [pendingVideoId, setPendingVideoId] = useState<string | null>(null);
   const [playlistIdx, setPlaylistIdx] = useState(0);
   const [promptConfig, setPromptConfig] = useState<{
     isOpen: boolean;
     title: string;
     placeholder: string;
-    action: "CREATE" | "IMPORT" | "RENAME" | null;
+    action: "CREATE" | "IMPORT" | "RENAME" | "ADD_SONG" | null;
     targetId?: string;
   }>({ isOpen: false, title: "", placeholder: "", action: null });
   const [trackIdx, setTrackIdx] = useState(0);
@@ -771,6 +795,105 @@ export default function RadioPlayer() {
   }, [trackIdx, playlistIdx]);
 
   /* ─── Custom Playlist Handlers ─── */
+  /* ─── YouTube URL Parsing ─── */
+  const extractVideoId = (input: string): string | null => {
+    const trimmed = input.trim();
+
+    // Raw 11-char video ID
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+
+    try {
+      const urlObj = new URL(trimmed);
+
+      // youtube.com/watch?v=VIDEO_ID
+      if (urlObj.hostname.includes('youtube.com') && urlObj.searchParams.has('v')) {
+        const v = urlObj.searchParams.get('v');
+        if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) return v;
+      }
+
+      // youtube.com/shorts/VIDEO_ID
+      const shortsMatch = urlObj.pathname.match(/\/shorts\/([a-zA-Z0-9_-]{11})/);
+      if (shortsMatch) return shortsMatch[1];
+
+      // youtu.be/VIDEO_ID
+      if (urlObj.hostname === 'youtu.be') {
+        const id = urlObj.pathname.slice(1).split('/')[0].split('?')[0];
+        if (id && /^[a-zA-Z0-9_-]{11}$/.test(id)) return id;
+      }
+    } catch {
+      // Not a valid URL
+    }
+
+    return null;
+  };
+
+  /* ─── Add Single Song ─── */
+  const addSongToPlaylist = async (videoId: string, targetPlaylist: Playlist) => {
+    // Check for duplicate by videoId
+    if (targetPlaylist.tracks.some(t => t.videoId === videoId)) {
+      alert("This song is already in the playlist.");
+      return;
+    }
+
+    setIsImporting(true);
+    setImportProgress("Fetching video info...");
+    try {
+      const res = await fetch(`/api/youtube/single?videoId=${videoId}`);
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Failed to fetch video");
+
+      setCustomPlaylists(prev => prev.map(p => {
+        if (p.id === targetPlaylist.id) {
+          return { ...p, tracks: [...p.tracks, data.track] };
+        }
+        return p;
+      }));
+
+      // Switch to the target playlist
+      const targetIdx = allPlaylists.findIndex(p => p.id === targetPlaylist.id);
+      if (targetIdx >= 0) setPlaylistIdx(targetIdx);
+
+      setShowPlaylist(true);
+      alert(`Added "${data.track.title}" to ${targetPlaylist.name}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      alert(`Failed to add song: ${message}`);
+    } finally {
+      setIsImporting(false);
+      setImportProgress("");
+    }
+  };
+
+  const processAddSong = async (input: string) => {
+    const videoId = extractVideoId(input);
+    if (!videoId) {
+      alert("Invalid YouTube URL or video ID. Supported formats:\n• youtube.com/watch?v=...\n• youtu.be/...\n• youtube.com/shorts/...\n• Raw 11-character video ID");
+      return;
+    }
+
+    // If no custom playlist exists
+    if (customPlaylists.length === 0) {
+      alert("Please create a custom playlist first, then add songs to it.");
+      return;
+    }
+
+    const currentPl = allPlaylists[playlistIdx];
+    const isCustom = currentPl?.id.startsWith('custom-');
+
+    if (isCustom) {
+      // Currently on a custom playlist → add directly
+      await addSongToPlaylist(videoId, currentPl);
+    } else if (customPlaylists.length === 1) {
+      // Only one custom playlist → add there
+      await addSongToPlaylist(videoId, customPlaylists[0]);
+    } else {
+      // Multiple custom playlists → show picker
+      setPendingVideoId(videoId);
+    }
+  };
+
+  /* ─── Import Playlist ─── */
   const processImport = async (url: string) => {
     let playlistId = "";
     try {
@@ -791,11 +914,20 @@ export default function RadioPlayer() {
     }
 
     setIsImporting(true);
+    setImportProgress("Fetching playlist...");
     try {
       const res = await fetch(`/api/youtube/import?playlistId=${playlistId}`);
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.error || "Failed to import");
+
+      // Deduplicate tracks by videoId within the imported set
+      const seenVideoIds = new Set<string>();
+      const uniqueTracks = data.tracks.filter((t: Track) => {
+        if (seenVideoIds.has(t.videoId)) return false;
+        seenVideoIds.add(t.videoId);
+        return true;
+      });
 
       const newPlaylist: Playlist = {
         id: `custom-yt-${Date.now()}`,
@@ -803,18 +935,22 @@ export default function RadioPlayer() {
         icon: "▶️",
         description: "Imported from YouTube",
         time: "Anytime",
-        tracks: data.tracks
+        tracks: uniqueTracks
       };
 
       setCustomPlaylists(prev => [...prev, newPlaylist]);
       setPlaylistIdx(playlists.length + customPlaylists.length);
       setTrackIdx(0);
       setShowPlaylist(true);
-      alert(`Successfully imported ${data.tracks.length} tracks!`);
-    } catch (err: any) {
-      alert(`Import failed: ${err.message}`);
+
+      const skippedMsg = data.skipped > 0 ? ` (${data.skipped} skipped — unavailable or non-embeddable)` : '';
+      alert(`Successfully imported ${uniqueTracks.length} tracks!${skippedMsg}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      alert(`Import failed: ${message}`);
     } finally {
       setIsImporting(false);
+      setImportProgress("");
     }
   };
 
@@ -842,6 +978,8 @@ export default function RadioPlayer() {
       processCreate(val);
     } else if (action === "IMPORT") {
       processImport(val);
+    } else if (action === "ADD_SONG") {
+      processAddSong(val);
     } else if (action === "RENAME" && targetId) {
       setCustomPlaylists(prev => prev.map(p => {
         if (p.id === targetId) {
@@ -914,6 +1052,7 @@ export default function RadioPlayer() {
     const pl = allPlaylists[playlistIdxRef.current];
     if (!pl || pl.tracks.length === 0) return;
     const t = pl.tracks[trackIdxRef.current];
+    if (!t) return;
 
     if (isPlaying) {
       playerRef.current.pauseVideo();
@@ -1102,6 +1241,18 @@ export default function RadioPlayer() {
         onCancel={() => setPromptConfig({ ...promptConfig, isOpen: false })}
       />
 
+      {pendingVideoId && (
+        <PlaylistPickerModal
+          playlists={customPlaylists}
+          onSelect={(playlist) => {
+            const vid = pendingVideoId;
+            setPendingVideoId(null);
+            addSongToPlaylist(vid, playlist);
+          }}
+          onCancel={() => setPendingVideoId(null)}
+        />
+      )}
+
       {/* ─── Fast Playlist Switcher ─── */}
       <div className="flex justify-center w-full">
         <PlaylistTabs
@@ -1122,7 +1273,9 @@ export default function RadioPlayer() {
           allPlaylists={allPlaylists}
           onCreatePlaylist={() => setPromptConfig({ isOpen: true, title: "Create New Playlist", placeholder: "Enter playlist name", action: "CREATE" })}
           onImportPlaylist={() => setPromptConfig({ isOpen: true, title: "Import YouTube Playlist", placeholder: "Paste YouTube Playlist URL", action: "IMPORT" })}
+          onAddSong={() => setPromptConfig({ isOpen: true, title: "Add YouTube Song", placeholder: "Paste YouTube URL or video ID", action: "ADD_SONG" })}
           isImporting={isImporting}
+          importProgress={importProgress}
         />
       </div>
 
@@ -1139,7 +1292,9 @@ export default function RadioPlayer() {
           onRemoveTrack={handleRemoveTrack}
           onCreatePlaylist={() => setPromptConfig({ isOpen: true, title: "Create New Playlist", placeholder: "Enter playlist name", action: "CREATE" })}
           onImportPlaylist={() => setPromptConfig({ isOpen: true, title: "Import YouTube Playlist", placeholder: "Paste YouTube Playlist URL", action: "IMPORT" })}
+          onAddSong={() => setPromptConfig({ isOpen: true, title: "Add YouTube Song", placeholder: "Paste YouTube URL or video ID", action: "ADD_SONG" })}
           isImporting={isImporting}
+          importProgress={importProgress}
           onDeletePlaylist={handleDeletePlaylist}
           onRenamePlaylist={(id, currentName) => setPromptConfig({ isOpen: true, title: "Rename Playlist", placeholder: currentName, action: "RENAME", targetId: id })}
           onClose={() => setShowPlaylist(false)}
@@ -1380,6 +1535,44 @@ function PromptModal({
         <div className="flex gap-3 justify-end mt-2">
           <button onClick={onCancel} className="px-4 py-2 rounded-full text-xs font-bold text-white/50 hover:text-white transition-colors">CANCEL</button>
           <button onClick={() => onSubmit(val)} className="px-5 py-2 rounded-full text-xs font-bold bg-amber-accent text-black hover:opacity-90 transition-opacity">CONFIRM</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlaylistPickerModal({
+  playlists,
+  onSelect,
+  onCancel
+}: {
+  playlists: Playlist[];
+  onSelect: (playlist: Playlist) => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in pointer-events-auto">
+      <div className="bg-[#0f0f13] border border-white/10 rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4">
+        <h3 className="text-lg font-display text-white">Add to which playlist?</h3>
+        <p className="text-xs text-white/40">Choose a playlist for this song</p>
+        <div className="flex flex-col gap-2 max-h-60 overflow-y-auto scrollbar-hide">
+          {playlists.map(pl => (
+            <button
+              key={pl.id}
+              onClick={() => onSelect(pl)}
+              className="w-full text-left px-4 py-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.1] border border-white/[0.06] hover:border-amber-accent/30 transition-all flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent"
+            >
+              <span className="text-lg">{pl.icon}</span>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold text-white/90 group-hover:text-white truncate">{pl.name}</div>
+                <div className="text-[10px] text-white/30">{pl.tracks.length} tracks</div>
+              </div>
+              <svg className="w-4 h-4 text-white/20 group-hover:text-amber-accent transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+          ))}
+        </div>
+        <div className="flex justify-end mt-1">
+          <button onClick={onCancel} className="px-4 py-2 rounded-full text-xs font-bold text-white/50 hover:text-white transition-colors">CANCEL</button>
         </div>
       </div>
     </div>
