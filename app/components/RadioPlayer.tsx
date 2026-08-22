@@ -737,6 +737,7 @@ export default function RadioPlayer() {
   const trackIdxRef = useRef(trackIdx);
   const playlistIdxRef = useRef(playlistIdx);
   const silenceAudioRef = useRef<HTMLAudioElement | null>(null);
+  const isUserPausedRef = useRef(true);
 
   useEffect(() => {
     // Smart initialization
@@ -1058,9 +1059,11 @@ export default function RadioPlayer() {
     if (!t) return;
 
     if (isPlaying) {
+      isUserPausedRef.current = true;
       playerRef.current.pauseVideo();
       track("pause", { playlist: pl.name, track: t.title });
     } else {
+      isUserPausedRef.current = false;
       playerRef.current.playVideo();
       track("play", { playlist: pl.name, track: t.title });
     }
@@ -1153,7 +1156,12 @@ export default function RadioPlayer() {
               const dur = e.target.getDuration();
               if (dur > 0) setDuration(dur);
             } else if (e.data === window.YT.PlayerState.PAUSED) {
-              setIsPlaying(false);
+              if (!isUserPausedRef.current) {
+                // OS automatically paused the iframe (e.g. mobile background), force resume
+                e.target.playVideo();
+              } else {
+                setIsPlaying(false);
+              }
             } else if (e.data === window.YT.PlayerState.ENDED) {
               setIsPlaying(false);
               goNextRef();
@@ -1229,9 +1237,11 @@ export default function RadioPlayer() {
 
     const actionHandlers: [MediaSessionAction, MediaSessionActionHandler][] = [
       ['play', () => {
+        isUserPausedRef.current = false;
         if (playerRef.current) playerRef.current.playVideo();
       }],
       ['pause', () => {
+        isUserPausedRef.current = true;
         if (playerRef.current) playerRef.current.pauseVideo();
       }],
       ['previoustrack', () => { goPrev(); }],
