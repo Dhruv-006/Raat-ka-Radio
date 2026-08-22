@@ -736,6 +736,7 @@ export default function RadioPlayer() {
   const progressTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const trackIdxRef = useRef(trackIdx);
   const playlistIdxRef = useRef(playlistIdx);
+  const silenceAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     // Smart initialization
@@ -789,10 +790,12 @@ export default function RadioPlayer() {
   } : playlists[0].tracks[0]);
 
   // Keep refs in sync
+  const allPlaylistsRef = useRef(allPlaylists);
   useEffect(() => {
     trackIdxRef.current = trackIdx;
     playlistIdxRef.current = playlistIdx;
-  }, [trackIdx, playlistIdx]);
+    allPlaylistsRef.current = allPlaylists;
+  }, [trackIdx, playlistIdx, allPlaylists]);
 
   /* ─── Custom Playlist Handlers ─── */
   /* ─── YouTube URL Parsing ─── */
@@ -1018,7 +1021,7 @@ export default function RadioPlayer() {
   /* ─── Track navigation ─── */
 
   const goNext = useCallback(() => {
-    const pl = allPlaylists[playlistIdxRef.current];
+    const pl = allPlaylistsRef.current[playlistIdxRef.current];
     if (!pl || pl.tracks.length === 0) return;
     const nextIdx = (trackIdxRef.current + 1) % pl.tracks.length;
     track("next", { playlist: pl.name, track: pl.tracks[nextIdx].title });
@@ -1027,7 +1030,7 @@ export default function RadioPlayer() {
   }, []);
 
   const goPrev = useCallback(() => {
-    const pl = allPlaylists[playlistIdxRef.current];
+    const pl = allPlaylistsRef.current[playlistIdxRef.current];
     if (!pl || pl.tracks.length === 0) return;
     if (playerRef.current && playerRef.current.getCurrentTime() > 3) {
       playerRef.current.seekTo(0, true);
@@ -1049,7 +1052,7 @@ export default function RadioPlayer() {
 
   const togglePlay = useCallback(() => {
     if (!playerRef.current) return;
-    const pl = allPlaylists[playlistIdxRef.current];
+    const pl = allPlaylistsRef.current[playlistIdxRef.current];
     if (!pl || pl.tracks.length === 0) return;
     const t = pl.tracks[trackIdxRef.current];
     if (!t) return;
@@ -1070,7 +1073,7 @@ export default function RadioPlayer() {
       playerRef.current.seekTo(newTime, true);
       setElapsed(newTime);
       track("seek", {
-        playlist: allPlaylists[playlistIdxRef.current].name,
+        playlist: allPlaylistsRef.current[playlistIdxRef.current].name,
         percentage: Math.round(pct * 100),
       });
     },
@@ -1081,8 +1084,8 @@ export default function RadioPlayer() {
     (idx: number) => {
       if (idx === playlistIdx) return;
       track("playlist_switch", {
-        from: allPlaylists[playlistIdx].name,
-        to: allPlaylists[idx].name,
+        from: allPlaylistsRef.current[playlistIdx].name,
+        to: allPlaylistsRef.current[idx].name,
       });
       setPlaylistIdx(idx);
       setTrackIdx(0);
@@ -1093,7 +1096,7 @@ export default function RadioPlayer() {
 
   const selectTrackFromModal = useCallback(
     (plIdx: number, trIdx: number) => {
-      const pl = allPlaylists[plIdx];
+      const pl = allPlaylistsRef.current[plIdx];
       track("select_track", { playlist: pl.name, track: pl.tracks[trIdx].title });
       if (plIdx !== playlistIdxRef.current) {
         setPlaylistIdx(plIdx);
@@ -1111,7 +1114,7 @@ export default function RadioPlayer() {
 
   useEffect(() => {
     const goNextRef = () => {
-      const pl = allPlaylists[playlistIdxRef.current];
+      const pl = allPlaylistsRef.current[playlistIdxRef.current];
       if (!pl || pl.tracks.length === 0) return;
       const nextIdx = (trackIdxRef.current + 1) % pl.tracks.length;
       track("next", { playlist: pl.name, track: pl.tracks[nextIdx].title });
@@ -1127,7 +1130,7 @@ export default function RadioPlayer() {
         height: "1",
         width: "1",
         videoId:
-          allPlaylists[playlistIdxRef.current].tracks[trackIdxRef.current]
+          allPlaylistsRef.current[playlistIdxRef.current].tracks[trackIdxRef.current]
             .videoId || "",
         playerVars: {
           playsinline: 1,
@@ -1157,7 +1160,7 @@ export default function RadioPlayer() {
             }
           },
           onError: (e: { data: number }) => {
-            const pl = allPlaylists[playlistIdxRef.current];
+            const pl = allPlaylistsRef.current[playlistIdxRef.current];
             const t = pl.tracks[trackIdxRef.current];
             track("youtube_error", {
               errorCode: e.data,
@@ -1198,6 +1201,112 @@ export default function RadioPlayer() {
     setDuration(currentTrack.duration);
     setElapsed(0);
   }, [currentTrack, isReady]);
+
+  /* ─── Media Session API (lock screen controls & background play) ─── */
+
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+
+    // Update metadata when track changes
+    const artworkSizes = ['default', 'mqdefault', 'hqdefault', 'sddefault'];
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: currentTrack.title || 'Raat Ka Radio',
+      artist: currentTrack.artist || 'Unknown Artist',
+      album: currentTrack.film || playlist.name || 'Raat Ka Radio',
+      artwork: currentTrack.videoId
+        ? artworkSizes.map((size) => ({
+            src: `https://img.youtube.com/vi/${currentTrack.videoId}/${size}.jpg`,
+            sizes: size === 'default' ? '120x90' : size === 'mqdefault' ? '320x180' : size === 'hqdefault' ? '480x360' : '640x480',
+            type: 'image/jpeg',
+          }))
+        : [],
+    });
+  }, [currentTrack, playlist]);
+
+  // Media Session action handlers (stable refs via goNext/goPrev/togglePlay)
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+
+    const actionHandlers: [MediaSessionAction, MediaSessionActionHandler][] = [
+      ['play', () => {
+        if (playerRef.current) playerRef.current.playVideo();
+      }],
+      ['pause', () => {
+        if (playerRef.current) playerRef.current.pauseVideo();
+      }],
+      ['previoustrack', () => { goPrev(); }],
+      ['nexttrack', () => { goNext(); }],
+      ['seekto', (details) => {
+        if (details.seekTime != null && playerRef.current) {
+          playerRef.current.seekTo(details.seekTime, true);
+          setElapsed(details.seekTime);
+        }
+      }],
+    ];
+
+    for (const [action, handler] of actionHandlers) {
+      try {
+        navigator.mediaSession.setActionHandler(action, handler);
+      } catch {
+        // Some browsers don't support all actions
+      }
+    }
+
+    return () => {
+      for (const [action] of actionHandlers) {
+        try {
+          navigator.mediaSession.setActionHandler(action, null);
+        } catch {
+          // ignore
+        }
+      }
+    };
+  }, [goNext, goPrev]);
+
+  // Update Media Session playback state & position
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+  }, [isPlaying]);
+
+  useEffect(() => {
+    if (!('mediaSession' in navigator) || !duration || duration <= 0) return;
+    try {
+      navigator.mediaSession.setPositionState({
+        duration: duration,
+        playbackRate: 1,
+        position: Math.min(elapsed, duration),
+      });
+    } catch {
+      // Some browsers may throw if position > duration due to timing
+    }
+  }, [elapsed, duration]);
+
+  /* ─── Silent audio keepalive (prevents mobile browser from suspending audio in background) ─── */
+
+  useEffect(() => {
+    if (isPlaying) {
+      if (!silenceAudioRef.current) {
+        const audio = new Audio('/silence.wav');
+        audio.loop = true;
+        audio.volume = 0.01; // Near-silent but keeps audio session alive
+        silenceAudioRef.current = audio;
+      }
+      silenceAudioRef.current.play().catch(() => {
+        // Autoplay blocked — will work after user gesture (which already happened via play button)
+      });
+    } else {
+      if (silenceAudioRef.current) {
+        silenceAudioRef.current.pause();
+      }
+    }
+
+    return () => {
+      if (silenceAudioRef.current) {
+        silenceAudioRef.current.pause();
+      }
+    };
+  }, [isPlaying]);
 
   /* ─── Progress polling ─── */
 
