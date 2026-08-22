@@ -1141,8 +1141,8 @@ export default function RadioPlayer() {
       if (!container || playerRef.current) return;
 
       playerRef.current = new window.YT.Player("yt-player-slot", {
-        height: "1",
-        width: "1",
+        height: "256",
+        width: "256",
         videoId:
           allPlaylistsRef.current[playlistIdxRef.current].tracks[trackIdxRef.current]
             .videoId || "",
@@ -1340,7 +1340,7 @@ export default function RadioPlayer() {
           We place it absolutely behind the player UI with near-zero opacity. */}
       <div
         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 -z-10 pointer-events-none"
-        style={{ opacity: 0.001 }}
+        style={{ opacity: 0.01 }}
         aria-hidden="true"
       >
         <div id="yt-player-slot" className="w-full h-full" />
