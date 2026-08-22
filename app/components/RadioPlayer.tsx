@@ -1061,10 +1061,21 @@ export default function RadioPlayer() {
     if (isPlaying) {
       isUserPausedRef.current = true;
       playerRef.current.pauseVideo();
+      if (silenceAudioRef.current) silenceAudioRef.current.pause();
       track("pause", { playlist: pl.name, track: t.title });
     } else {
       isUserPausedRef.current = false;
       playerRef.current.playVideo();
+      
+      // Synchronously unlock and play silent audio during user gesture
+      if (!silenceAudioRef.current) {
+        const audio = new Audio('/silence.wav');
+        audio.loop = true;
+        audio.volume = 0.01;
+        silenceAudioRef.current = audio;
+      }
+      silenceAudioRef.current.play().catch(() => {});
+      
       track("play", { playlist: pl.name, track: t.title });
     }
   }, [isPlaying]);
@@ -1156,12 +1167,7 @@ export default function RadioPlayer() {
               const dur = e.target.getDuration();
               if (dur > 0) setDuration(dur);
             } else if (e.data === window.YT.PlayerState.PAUSED) {
-              if (!isUserPausedRef.current) {
-                // OS automatically paused the iframe (e.g. mobile background), force resume
-                e.target.playVideo();
-              } else {
-                setIsPlaying(false);
-              }
+              setIsPlaying(false);
             } else if (e.data === window.YT.PlayerState.ENDED) {
               setIsPlaying(false);
               goNextRef();
@@ -1292,30 +1298,18 @@ export default function RadioPlayer() {
     }
   }, [elapsed, duration]);
 
-  /* ─── Silent audio keepalive (prevents mobile browser from suspending audio in background) ─── */
+  /* ─── Silent audio keepalive ─── */
 
   useEffect(() => {
-    if (isPlaying) {
-      if (!silenceAudioRef.current) {
-        const audio = new Audio('/silence.wav');
-        audio.loop = true;
-        audio.volume = 0.01; // Near-silent but keeps audio session alive
-        silenceAudioRef.current = audio;
-      }
-      silenceAudioRef.current.play().catch(() => {
-        // Autoplay blocked — will work after user gesture (which already happened via play button)
-      });
-    } else {
-      if (silenceAudioRef.current) {
-        silenceAudioRef.current.pause();
-      }
+    // If the OS forcefully pauses the video (isPlaying becomes false) but the user didn't pause it,
+    // we want to ensure the silent audio KEEPS playing. This maintains the Media Session and lock screen controls.
+    if (!isPlaying && !isUserPausedRef.current && silenceAudioRef.current) {
+      silenceAudioRef.current.play().catch(() => {});
+    } else if (isPlaying && silenceAudioRef.current) {
+      silenceAudioRef.current.play().catch(() => {});
+    } else if (!isPlaying && isUserPausedRef.current && silenceAudioRef.current) {
+      silenceAudioRef.current.pause();
     }
-
-    return () => {
-      if (silenceAudioRef.current) {
-        silenceAudioRef.current.pause();
-      }
-    };
   }, [isPlaying]);
 
   /* ─── Progress polling ─── */
